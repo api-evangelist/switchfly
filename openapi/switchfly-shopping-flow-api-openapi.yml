@@ -1,0 +1,1065 @@
+openapi: 3.1.0
+info:
+  title: Switchfly Loyalty Machine to Machine (OAuth2 & Refund) Machine to Machine (OAuth2 & Refund) Shopping Flow API
+  description: "Switchfly uses **OAuth 2** for the SSO authentication required to communicate with any 3rd party API in order to perform loyalty account actions.\nThe grant types supported are:\n\n- **client_credentials**\n- **authorization_code (with PKCE)**\n\nThis flexibility allows clients to seamlessly integrate with our platform. For instance, some clients may already possess\na form of Single Sign-On (SSO) \"token\" utilized internally for various actions concerning loyalty users,\nsuch as fetching profiles, redeeming rewards.\n\nIn such scenarios, adopting the `client_credentials` **grant type** flow could be a more logical choice for initiating Single Sign-On (SSO).\nThis approach enables third parties to consolidate authorization by leveraging parameters such as **client_id** and **client_secret** to acquire an access token.\nThis token operating as a Bearer token, can then be utilized alongside the internal \"token\" within any requests.\n\nFor this flow it will be required for the client to pass that token as a `UserToken` param into Switchfly's SSO endpoint. \n\nIf there is no such thing as a user `token` in the client internal SSO implementation `authorization_code` **grant type** will be the other option for the SSO integration.\n\nAfter any of the OAuth2 flows is completed Switchfly will gain access to any the following credentials:\n- `access_token`\n- `refresh_token` (only required on **Authorization Code** grant type)\n- `UserToken` (only required on **Client Credentials Code** grant type, sent by 3rd party client in SSO request)\n\nOnce this SSO step is completed Switchfly will be able to communicate with a client hosted API capable providing traveler profile information and\nredeeming points.\n\n# Initiate SSO against Switchfly\nIn this section, we will outline the SSO shopping flow for each supported grant type, detailing the endpoints in place.\nAdditionally, we will specify the circumstances under which each API call mentioned in this documentation will be utilized.\n\n## Authorization Code SSO\n\nWhen a third party opts to integrate with Switchfly using the authorization code, our application must initially generate the `code_challenge` data to commence the OAuth2 flow.\nConsequently, it becomes necessary for the third party to initiate navigation to the Switchfly site.\n\nThis implies that within the third-party website, a redirect mechanism must be implemented. This implementation will initially transition the user to the Switchfly site at `https://[domain].switchfly.com/`.\n\nAfter this Switchfly will detect that there is no loyalty session established yet and will generate a `code_challenge` and redirect the user to the specified client provided\n`/authorize` endpoint specifying the `redirect_uri`.\n\nThis `redirect_uri` will be the endpoint capable of receiving the authorization code, that's `https://[domain].switchfly.com/apps/api/sso/oauth2` \n\nFollowing the user's login on the client login form, upon successful authentication, the third-party system is anticipated to send back the authorization code to the aforementioned `redirect_uri`.\n\nOnce Switchfly receives the authorization code it will be used to obtain `access_token` & `refresh_token`.\n\nAfter being able to fetch the tokens Switchfly will perform a request to the provided `/traveler-profile` using the `access_token` as a Authorization Bearer token, which will provide\nback a `TravelerProfile` response back to our system which then will be parsed to SSO the customer into our system.\n\nSwitchfly will present the customer a search form from which the customer can proceed to look for any desired products.\n\nDuring the checkout products process Switchfly will perform a request to the provided `/redeem` endpoint to send the 3rd party system the details about the points redemption\nperformed by the customer and the products being purchased.\n\nDuring the shopping flow on long sessions there will be some keep alive requests (`grant_type=refresh_token`) used to obtain new tokens to allow the user to book once they are ready.\n\n## Flow Steps\n\n- Navigate to the Switchfly site.\n- Redirect to the client's `/authorize` endpoint.\n- Log in with customer credentials.\n- Send the code to Switchfly's `/apps/api/sso/oauth2`.\n- Request a token from the client's `/token` endpoint.\n- Request a profile from the client's `/traveler-profile` endpoint.\n- During checkout, send a request to the client's `/redeem` endpoint.\n- Conditionally, refresh token requests to `/token`.\n\n## Client Credentials SSO\n\nWhen a 3rd party chooses to integrate with Switchfly using client credentials the 3rd party is only required to perform a request to Switchfly OAuth2 endpoint providing the \"**token**\" as a parameter\n\"**userToken**\".\n\n`https://[domain].switchfly.com/apps/api/sso/oauth2` post parameter `\"userToken\"=[internal_token]`\n\nOnce Switchfly receives this token from the 3rd party it will obtain an `access_token` using the provided `client_id` & `client_secret`.\n\nAfter being table to retrieve a token Switchfly will perform a request to the provided `/traveler-profile` endpoint sending the following headers:\n- Authorization: Bearer [`access_token`]\n- UserToken: [userToken send over to `/oauth2` endpoint]\n\nThis should provide back a `TravelerProfile` response back to our system which then will be parsed to SSO the customer into our system.\n\nSwitchfly will present the customer a search form from which the customer can proceed to look for any desired products.\n\nDuring the checkout products process Switchfly will perform a request to the provided `/redeem` endpoint to send the 3rd party system the details about the booking such as points\nused and products included.\n\n## Flow Steps:\n\n- The client submits the userToken to Switchfly's `/apps/api/sso/oauth2`.\n- A token is requested from the client's `/token` endpoint.\n- A profile is requested from the client's `/traveler-profile` endpoint.\n- During checkout, a request is sent to the client's `/redeem` endpoint.\n----"
+  version: v3.4
+tags:
+- name: Shopping Flow
+  description: Information about requests performed by Switchfly system to 3rd party service to fetch Loyalty profile data and redeem points from the customer account.
+paths:
+  /traveler-profile:
+    get:
+      tags:
+      - Shopping Flow
+      summary: Retrieve Traveler Profile information
+      description: "Request performed to 3rd party endpoint to fetch Traveler Profile information such as `travelerProfileId`, `firstName`, `balancePoints`, `customerCurrency`\n- Supported Currencies:\n  - USD\n  - AED\n  - AUD\n  - BBD\n  - BRL\n  - BSD\n  - CAD\n  - COP\n  - CRC\n  - DOP\n  - EUR\n  - GBP\n  - GTQ\n  - HNL\n  - IDR\n  - ILS\n  - INR\n  - JMD\n  - JOD\n  - JPY\n  - MXN\n  - MYR\n  - NOK\n  - NZD\n  - PAB\n  - PEN\n  - PHP\n  - PLN\n  - SGD\n  - THB\n  - TTD\n  - UYU\n  - VND\n  - XCD\n  - ZAR\n\n- Supported Languages:\n  - English\n  - French\n  - Spanish\n  - LA Spanish\n  - Chinese_Simplified\n  - Japanese\n  - BR Portuguese\n  - Thai\n  - German\n"
+      operationId: TravelerProfile
+      security:
+      - bearerAuth: []
+      parameters:
+      - in: header
+        name: UserToken
+        description: Unique string token used to identify user session in case `client_credential` grant type was used for OAuth 2 SSO.
+        required: false
+        schema:
+          type: string
+      responses:
+        '200':
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TravelerProfile'
+              examples:
+                TravelerProfile:
+                  $ref: '#/components/examples/TravelerProfile'
+  /redeem:
+    post:
+      tags:
+      - Shopping Flow
+      summary: Redeem points from Traveler Points account
+      description: "This API will allow Switchfly the capability of redeeming points from a customer loyalty profile account.\n\nSwitchfly will send a request to this API endpoint using a JSON payload which will describe the products the customer (booking components) is redeeming points on.\n\nThis will include the points and cash used for each component and will also include information whether or not a credit card payment top up was needed to complete the booking.\n\nThe only requirement for this endpoint is to return Switchfly a unique transaction id that represents the redemption transaction for this customer `redemptionConfirmationId`\n\nThis is important since this `redemptionConfirmationId` will be used by Switchfly if a points refund request is needed later to cancel a booking or individual components of it.\n\n**Note:**\n\nIf a failure occurs after the redeem call is executed, the auto-cancel process will be activated to prevent the user from losing any points. Switchfly will then initiate a product cancellation and initiate a refund, as outlined in the following chart:\n\n<div style='margin:14px'>\n <svg xmlns=\"http://www.w3.org/2000/svg\"  xmlns:xlink=\"http://www.w3.org/1999/xlink\" version=\"1.1\" width=\"751px\" height=\"802px\" viewBox=\"-0.5 -0.5 751 802\" content=\"&lt;mxfile host=&quot;app.diagrams.net&quot; agent=&quot;Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/133.0.0.0 Safari/537.36&quot; version=&quot;26.1.3&quot;&gt;&#10;  &lt;diagram id=&quot;dWV0mfe5jx5J_lB2EB_P&quot; name=&quot;Page-1&quot;&gt;&#10;    &lt;mxGraphModel dx=&quot;1085&quot; dy=&quot;540&quot; grid=&quot;1&quot; gridSize=&quot;10&quot; guides=&quot;1&quot; tooltips=&quot;1&quot; connect=&quot;1&quot; arrows=&quot;1&quot; fold=&quot;1&quot; page=&quot;1&quot; pageScale=&quot;1&quot; pageWidth=&quot;850&quot; pageHeight=&quot;1100&quot; math=&quot;0&quot; shadow=&quot;0&quot;&gt;&#10;      &lt;root&gt;&#10;        &lt;mxCell id=&quot;0&quot; /&gt;&#10;        &lt;mxCell id=&quot;1&quot; parent=&quot;0&quot; /&gt;&#10;        &lt;mxCell id=&quot;YD2cjV0bOqWloPQhhFmI-1&quot; value=&quot;User&quot; style=&quot;shape=umlLifeline;perimeter=lifelinePerimeter;whiteSpace=wrap;html=1;container=0;dropTarget=0;collapsible=0;recursiveResize=0;outlineConnect=0;portConstraint=eastwest;newEdgeStyle={&amp;quot;edgeStyle&amp;quot;:&amp;quot;elbowEdgeStyle&amp;quot;,&amp;quot;elbow&amp;quot;:&amp;quot;vertical&amp;quot;,&amp;quot;curved&amp;quot;:0,&amp;quot;rounded&amp;quot;:0};&quot; parent=&quot;1&quot; vertex=&quot;1&quot;&gt;&#10;          &lt;mxGeometry x=&quot;60&quot; y=&quot;40&quot; width=&quot;100&quot; height=&quot;800&quot; as=&quot;geometry&quot; /&gt;&#10;        &lt;/mxCell&gt;&#10;        &lt;mxCell id=&quot;YD2cjV0bOqWloPQhhFmI-2&quot; value=&quot;Switchfly&quot; style=&quot;shape=umlLifeline;perimeter=lifelinePerimeter;whiteSpace=wrap;html=1;container=0;dropTarget=0;collapsible=0;recursiveResize=0;outlineConnect=0;portConstraint=eastwest;newEdgeStyle={&amp;quot;edgeStyle&amp;quot;:&amp;quot;elbowEdgeStyle&amp;quot;,&amp;quot;elbow&amp;quot;:&amp;quot;vertical&amp;quot;,&amp;quot;curved&amp;quot;:0,&amp;quot;rounded&amp;quot;:0};&quot; parent=&quot;1&quot; vertex=&quot;1&quot;&gt;&#10;          &lt;mxGeometry x=&quot;280&quot; y=&quot;40&quot; width=&quot;100&quot; height=&quot;800&quot; as=&quot;geometry&quot; /&gt;&#10;        &lt;/mxCell&gt;&#10;        &lt;mxCell id=&quot;YD2cjV0bOqWloPQhhFmI-4&quot; value=&quot;&quot; style=&quot;html=1;points=[];perimeter=orthogonalPerimeter;outlineConnect=0;targetShapes=umlLifeline;portConstraint=eastwest;newEdgeStyle={&amp;quot;edgeStyle&amp;quot;:&amp;quot;elbowEdgeStyle&amp;quot;,&amp;quot;elbow&amp;quot;:&amp;quot;vertical&amp;quot;,&amp;quot;curved&amp;quot;:0,&amp;quot;rounded&amp;quot;:0};&quot; parent=&quot;YD2cjV0bOqWloPQhhFmI-2&quot; vertex=&quot;1&quot;&gt;&#10;          &lt;mxGeometry x=&quot;45&quot; y=&quot;70&quot; width=&quot;10&quot; height=&quot;320&quot; as=&quot;geometry&quot; /&gt;&#10;        &lt;/mxCell&gt;&#10;        &lt;mxCell id=&quot;YD2cjV0bOqWloPQhhFmI-5&quot; value=&quot;&quot; style=&quot;html=1;points=[];perimeter=orthogonalPerimeter;outlineConnect=0;targetShapes=umlLifeline;portConstraint=eastwest;newEdgeStyle={&amp;quot;edgeStyle&amp;quot;:&amp;quot;elbowEdgeStyle&amp;quot;,&amp;quot;elbow&amp;quot;:&amp;quot;vertical&amp;quot;,&amp;quot;curved&amp;quot;:0,&amp;quot;rounded&amp;quot;:0};&quot; parent=&quot;YD2cjV0bOqWloPQhhFmI-2&quot; vertex=&quot;1&quot;&gt;&#10;          &lt;mxGeometry x=&quot;46&quot; y=&quot;500&quot; width=&quot;10&quot; height=&quot;182&quot; as=&quot;geometry&quot; /&gt;&#10;        &lt;/mxCell&gt;&#10;        &lt;mxCell id=&quot;YD2cjV0bOqWloPQhhFmI-6&quot; value=&quot;&amp;lt;font style=&amp;quot;font-size: 11px;&amp;quot;&amp;gt;3rd party&amp;lt;br&amp;gt;Authorization service&amp;lt;/font&amp;gt;&quot; style=&quot;shape=umlLifeline;perimeter=lifelinePerimeter;whiteSpace=wrap;html=1;container=0;dropTarget=0;collapsible=0;recursiveResize=0;outlineConnect=0;portConstraint=eastwest;newEdgeStyle={&amp;quot;edgeStyle&amp;quot;:&amp;quot;elbowEdgeStyle&amp;quot;,&amp;quot;elbow&amp;quot;:&amp;quot;vertical&amp;quot;,&amp;quot;curved&amp;quot;:0,&amp;quot;rounded&amp;quot;:0};&quot; parent=&quot;1&quot; vertex=&quot;1&quot;&gt;&#10;          &lt;mxGeometry x=&quot;520&quot; y=&quot;40&quot; width=&quot;100&quot; height=&quot;800&quot; as=&quot;geometry&quot; /&gt;&#10;        &lt;/mxCell&gt;&#10;        &lt;mxCell id=&quot;YD2cjV0bOqWloPQhhFmI-8&quot; value=&quot;3rd party&amp;lt;br&amp;gt;Redemption API&quot; style=&quot;shape=umlLifeline;perimeter=lifelinePerimeter;whiteSpace=wrap;html=1;container=0;dropTarget=0;collapsible=0;recursiveResize=0;outlineConnect=0;portConstraint=eastwest;newEdgeStyle={&amp;quot;edgeStyle&amp;quot;:&amp;quot;elbowEdgeStyle&amp;quot;,&amp;quot;elbow&amp;quot;:&amp;quot;vertical&amp;quot;,&amp;quot;curved&amp;quot;:0,&amp;quot;rounded&amp;quot;:0};&quot; parent=&quot;1&quot; vertex=&quot;1&quot;&gt;&#10;          &lt;mxGeometry x=&quot;710&quot; y=&quot;40&quot; width=&quot;100&quot; height=&quot;800&quot; as=&quot;geometry&quot; /&gt;&#10;        &lt;/mxCell&gt;&#10;        &lt;mxCell id=&quot;YD2cjV0bOqWloPQhhFmI-27&quot; value=&quot;&quot; style=&quot;endArrow=classic;html=1;rounded=0;&quot; parent=&quot;1&quot; edge=&quot;1&quot;&gt;&#10;          &lt;mxGeometry width=&quot;50&quot; height=&quot;50&quot; relative=&quot;1&quot; as=&quot;geometry&quot;&gt;&#10;            &lt;mxPoint x=&quot;340.5&quot; y=&quot;256.9999999999998&quot; as=&quot;sourcePoint&quot; /&gt;&#10;            &lt;mxPoint x=&quot;760&quot; y=&quot;257&quot; as=&quot;targetPoint&quot; /&gt;&#10;          &lt;/mxGeometry&gt;&#10;        &lt;/mxCell&gt;&#10;        &lt;mxCell id=&quot;YD2cjV0bOqWloPQhhFmI-28&quot; value=&quot;Redemption RQ + access_token&quot; style=&quot;text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;&quot; parent=&quot;1&quot; vertex=&quot;1&quot;&gt;&#10;          &lt;mxGeometry x=&quot;340.5&quot; y=&quot;227&quot; width=&quot;200&quot; height=&quot;30&quot; as=&quot;geometry&quot; /&gt;&#10;        &lt;/mxCell&gt;&#10;        &lt;mxCell id=&quot;YD2cjV0bOqWloPQhhFmI-29&quot; value=&quot;&quot; style=&quot;endArrow=classic;html=1;rounded=0;&quot; parent=&quot;1&quot; edge=&quot;1&quot;&gt;&#10;          &lt;mxGeometry width=&quot;50&quot; height=&quot;50&quot; relative=&quot;1&quot; as=&quot;geometry&quot;&gt;&#10;            &lt;mxPoint x=&quot;759.5&quot; y=&quot;290.9999999999998&quot; as=&quot;sourcePoint&quot; /&gt;&#10;            &lt;mxPoint x=&quot;340.5&quot; y=&quot;290.9999999999998&quot; as=&quot;targetPoint&quot; /&gt;&#10;          &lt;/mxGeometry&gt;&#10;        &lt;/mxCell&gt;&#10;        &lt;mxCell id=&quot;YD2cjV0bOqWloPQhhFmI-30&quot; value=&quot;Redemption Confirmation RS&quot; style=&quot;text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;&quot; parent=&quot;1&quot; vertex=&quot;1&quot;&gt;&#10;          &lt;mxGeometry x=&quot;345.5&quot; y=&quot;260&quot; width=&quot;180&quot; height=&quot;30&quot; as=&quot;geometry&quot; /&gt;&#10;        &lt;/mxCell&gt;&#10;        &lt;mxCell id=&quot;YD2cjV0bOqWloPQhhFmI-31&quot; value=&quot;&quot; style=&quot;endArrow=classic;html=1;rounded=0;&quot; parent=&quot;1&quot; edge=&quot;1&quot;&gt;&#10;          &lt;mxGeometry width=&quot;50&quot; height=&quot;50&quot; relative=&quot;1&quot; as=&quot;geometry&quot;&gt;&#10;            &lt;mxPoint x=&quot;109.38888888888891&quot; y=&quot;258.89&quot; as=&quot;sourcePoint&quot; /&gt;&#10;            &lt;mxPoint x=&quot;325&quot; y=&quot;258.89&quot; as=&quot;targetPoint&quot; /&gt;&#10;            &lt;Array as=&quot;points&quot;&gt;&#10;              &lt;mxPoint x=&quot;240&quot; y=&quot;258.89&quot; /&gt;&#10;            &lt;/Array&gt;&#10;          &lt;/mxGeometry&gt;&#10;        &lt;/mxCell&gt;&#10;        &lt;mxCell id=&quot;YD2cjV0bOqWloPQhhFmI-32&quot; value=&quot;Checkout Redeem Product&quot; style=&quot;text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;&quot; parent=&quot;1&quot; vertex=&quot;1&quot;&gt;&#10;          &lt;mxGeometry x=&quot;140&quot; y=&quot;228.89&quot; width=&quot;170&quot; height=&quot;30&quot; as=&quot;geometry&quot; /&gt;&#10;        &lt;/mxCell&gt;&#10;        &lt;mxCell id=&quot;YD2cjV0bOqWloPQhhFmI-33&quot; value=&quot;&quot; style=&quot;endArrow=classic;html=1;rounded=0;&quot; parent=&quot;1&quot; source=&quot;YD2cjV0bOqWloPQhhFmI-5&quot; edge=&quot;1&quot;&gt;&#10;          &lt;mxGeometry width=&quot;50&quot; height=&quot;50&quot; relative=&quot;1&quot; as=&quot;geometry&quot;&gt;&#10;            &lt;mxPoint x=&quot;335&quot; y=&quot;662&quot; as=&quot;sourcePoint&quot; /&gt;&#10;            &lt;mxPoint x=&quot;760&quot; y=&quot;662&quot; as=&quot;targetPoint&quot; /&gt;&#10;          &lt;/mxGeometry&gt;&#10;        &lt;/mxCell&gt;&#10;        &lt;mxCell id=&quot;YD2cjV0bOqWloPQhhFmI-34&quot; value=&quot;Refund RQ + access token&quot; style=&quot;text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;&quot; parent=&quot;1&quot; vertex=&quot;1&quot;&gt;&#10;          &lt;mxGeometry x=&quot;355.5&quot; y=&quot;630&quot; width=&quot;170&quot; height=&quot;30&quot; as=&quot;geometry&quot; /&gt;&#10;        &lt;/mxCell&gt;&#10;        &lt;mxCell id=&quot;YD2cjV0bOqWloPQhhFmI-35&quot; value=&quot;&quot; style=&quot;endArrow=classic;html=1;rounded=0;&quot; parent=&quot;1&quot; target=&quot;YD2cjV0bOqWloPQhhFmI-5&quot; edge=&quot;1&quot;&gt;&#10;          &lt;mxGeometry width=&quot;50&quot; height=&quot;50&quot; relative=&quot;1&quot; as=&quot;geometry&quot;&gt;&#10;            &lt;mxPoint x=&quot;760&quot; y=&quot;712&quot; as=&quot;sourcePoint&quot; /&gt;&#10;            &lt;mxPoint x=&quot;340&quot; y=&quot;712&quot; as=&quot;targetPoint&quot; /&gt;&#10;          &lt;/mxGeometry&gt;&#10;        &lt;/mxCell&gt;&#10;        &lt;mxCell id=&quot;YD2cjV0bOqWloPQhhFmI-36&quot; value=&quot;Refund RS&quot; style=&quot;text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;&quot; parent=&quot;1&quot; vertex=&quot;1&quot;&gt;&#10;          &lt;mxGeometry x=&quot;415&quot; y=&quot;680&quot; width=&quot;80&quot; height=&quot;30&quot; as=&quot;geometry&quot; /&gt;&#10;        &lt;/mxCell&gt;&#10;        &lt;mxCell id=&quot;YD2cjV0bOqWloPQhhFmI-37&quot; value=&quot;Refund autocancel&quot; style=&quot;text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;&quot; parent=&quot;1&quot; vertex=&quot;1&quot;&gt;&#10;          &lt;mxGeometry x=&quot;205&quot; y=&quot;660&quot; width=&quot;120&quot; height=&quot;30&quot; as=&quot;geometry&quot; /&gt;&#10;        &lt;/mxCell&gt;&#10;        &lt;mxCell id=&quot;YD2cjV0bOqWloPQhhFmI-51&quot; value=&quot;1&quot; style=&quot;ellipse;whiteSpace=wrap;html=1;aspect=fixed;&quot; parent=&quot;1&quot; vertex=&quot;1&quot;&gt;&#10;          &lt;mxGeometry x=&quot;120&quot; y=&quot;228.89&quot; width=&quot;30&quot; height=&quot;30&quot; as=&quot;geometry&quot; /&gt;&#10;        &lt;/mxCell&gt;&#10;        &lt;mxCell id=&quot;YD2cjV0bOqWloPQhhFmI-52&quot; value=&quot;2&quot; style=&quot;ellipse;whiteSpace=wrap;html=1;aspect=fixed;&quot; parent=&quot;1&quot; vertex=&quot;1&quot;&gt;&#10;          &lt;mxGeometry x=&quot;775&quot; y=&quot;131&quot; width=&quot;30&quot; height=&quot;30&quot; as=&quot;geometry&quot; /&gt;&#10;        &lt;/mxCell&gt;&#10;        &lt;mxCell id=&quot;YD2cjV0bOqWloPQhhFmI-53&quot; value=&quot;8&quot; style=&quot;ellipse;whiteSpace=wrap;html=1;aspect=fixed;&quot; parent=&quot;1&quot; vertex=&quot;1&quot;&gt;&#10;          &lt;mxGeometry x=&quot;250&quot; y=&quot;617&quot; width=&quot;30&quot; height=&quot;30&quot; as=&quot;geometry&quot; /&gt;&#10;        &lt;/mxCell&gt;&#10;        &lt;mxCell id=&quot;YD2cjV0bOqWloPQhhFmI-54&quot; value=&quot;9&quot; style=&quot;ellipse;whiteSpace=wrap;html=1;aspect=fixed;&quot; parent=&quot;1&quot; vertex=&quot;1&quot;&gt;&#10;          &lt;mxGeometry x=&quot;775&quot; y=&quot;647&quot; width=&quot;30&quot; height=&quot;30&quot; as=&quot;geometry&quot; /&gt;&#10;        &lt;/mxCell&gt;&#10;        &lt;mxCell id=&quot;YD2cjV0bOqWloPQhhFmI-55&quot; value=&quot;&quot; style=&quot;endArrow=classic;html=1;rounded=0;&quot; parent=&quot;1&quot; edge=&quot;1&quot;&gt;&#10;          &lt;mxGeometry width=&quot;50&quot; height=&quot;50&quot; relative=&quot;1&quot; as=&quot;geometry&quot;&gt;&#10;            &lt;mxPoint x=&quot;335&quot; y=&quot;358&quot; as=&quot;sourcePoint&quot; /&gt;&#10;            &lt;mxPoint x=&quot;759.5&quot; y=&quot;358&quot; as=&quot;targetPoint&quot; /&gt;&#10;          &lt;/mxGeometry&gt;&#10;        &lt;/mxCell&gt;&#10;        &lt;mxCell id=&quot;YD2cjV0bOqWloPQhhFmI-56&quot; value=&quot;Traveler Profile RQ + access_token&quot; style=&quot;text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;&quot; parent=&quot;1&quot; vertex=&quot;1&quot;&gt;&#10;          &lt;mxGeometry x=&quot;340.5&quot; y=&quot;325&quot; width=&quot;210&quot; height=&quot;30&quot; as=&quot;geometry&quot; /&gt;&#10;        &lt;/mxCell&gt;&#10;        &lt;mxCell id=&quot;YD2cjV0bOqWloPQhhFmI-57&quot; value=&quot;&quot; style=&quot;endArrow=classic;html=1;rounded=0;&quot; parent=&quot;1&quot; edge=&quot;1&quot;&gt;&#10;          &lt;mxGeometry width=&quot;50&quot; height=&quot;50&quot; relative=&quot;1&quot; as=&quot;geometry&quot;&gt;&#10;            &lt;mxPoint x=&quot;760&quot; y=&quot;400&quot; as=&quot;sourcePoint&quot; /&gt;&#10;            &lt;mxPoint x=&quot;335.5&quot; y=&quot;400&quot; as=&quot;targetPoint&quot; /&gt;&#10;          &lt;/mxGeometry&gt;&#10;        &lt;/mxCell&gt;&#10;        &lt;mxCell id=&quot;YD2cjV0bOqWloPQhhFmI-58&quot; value=&quot;Traveler Profile RS&quot; style=&quot;text;html=1;align=left;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;&quot; parent=&quot;1&quot; vertex=&quot;1&quot;&gt;&#10;          &lt;mxGeometry x=&quot;350.5&quot; y=&quot;370&quot; width=&quot;120&quot; height=&quot;30&quot; as=&quot;geometry&quot; /&gt;&#10;        &lt;/mxCell&gt;&#10;        &lt;mxCell id=&quot;YD2cjV0bOqWloPQhhFmI-59&quot; value=&quot;6&quot; style=&quot;ellipse;whiteSpace=wrap;html=1;aspect=fixed;&quot; parent=&quot;1&quot; vertex=&quot;1&quot;&gt;&#10;          &lt;mxGeometry x=&quot;775&quot; y=&quot;343&quot; width=&quot;30&quot; height=&quot;30&quot; as=&quot;geometry&quot; /&gt;&#10;        &lt;/mxCell&gt;&#10;        &lt;mxCell id=&quot;YD2cjV0bOqWloPQhhFmI-60&quot; value=&quot;&quot; style=&quot;endArrow=classic;html=1;rounded=0;&quot; parent=&quot;1&quot; edge=&quot;1&quot;&gt;&#10;          &lt;mxGeometry width=&quot;50&quot; height=&quot;50&quot; relative=&quot;1&quot; as=&quot;geometry&quot;&gt;&#10;            &lt;mxPoint x=&quot;340&quot; y=&quot;150&quot; as=&quot;sourcePoint&quot; /&gt;&#10;            &lt;mxPoint x=&quot;760.25&quot; y=&quot;150&quot; as=&quot;targetPoint&quot; /&gt;&#10;          &lt;/mxGeometry&gt;&#10;        &lt;/mxCell&gt;&#10;        &lt;mxCell id=&quot;YD2cjV0bOqWloPQhhFmI-61&quot; value=&quot;Traveler Profile RQ + access_token&quot; style=&quot;text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;&quot; parent=&quot;1&quot; vertex=&quot;1&quot;&gt;&#10;          &lt;mxGeometry x=&quot;340&quot; y=&quot;118&quot; width=&quot;210&quot; height=&quot;30&quot; as=&quot;geometry&quot; /&gt;&#10;        &lt;/mxCell&gt;&#10;        &lt;mxCell id=&quot;YD2cjV0bOqWloPQhhFmI-62&quot; value=&quot;&quot; style=&quot;endArrow=classic;html=1;rounded=0;&quot; parent=&quot;1&quot; edge=&quot;1&quot;&gt;&#10;          &lt;mxGeometry width=&quot;50&quot; height=&quot;50&quot; relative=&quot;1&quot; as=&quot;geometry&quot;&gt;&#10;            &lt;mxPoint x=&quot;759.5&quot; y=&quot;188&quot; as=&quot;sourcePoint&quot; /&gt;&#10;            &lt;mxPoint x=&quot;335.5&quot; y=&quot;188&quot; as=&quot;targetPoint&quot; /&gt;&#10;          &lt;/mxGeometry&gt;&#10;        &lt;/mxCell&gt;&#10;        &lt;mxCell id=&quot;YD2cjV0bOqWloPQhhFmI-63&quot; value=&quot;Traveler Profile RS&quot; style=&quot;text;html=1;align=left;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;&quot; parent=&quot;1&quot; vertex=&quot;1&quot;&gt;&#10;          &lt;mxGeometry x=&quot;350.5&quot; y=&quot;161&quot; width=&quot;120&quot; height=&quot;30&quot; as=&quot;geometry&quot; /&gt;&#10;        &lt;/mxCell&gt;&#10;        &lt;mxCell id=&quot;YD2cjV0bOqWloPQhhFmI-64&quot; value=&quot;4&quot; style=&quot;ellipse;whiteSpace=wrap;html=1;aspect=fixed;&quot; parent=&quot;1&quot; vertex=&quot;1&quot;&gt;&#10;          &lt;mxGeometry x=&quot;775&quot; y=&quot;240&quot; width=&quot;30&quot; height=&quot;30&quot; as=&quot;geometry&quot; /&gt;&#10;        &lt;/mxCell&gt;&#10;        &lt;mxCell id=&quot;YD2cjV0bOqWloPQhhFmI-65&quot; value=&quot;3&quot; style=&quot;ellipse;whiteSpace=wrap;html=1;aspect=fixed;&quot; parent=&quot;1&quot; vertex=&quot;1&quot;&gt;&#10;          &lt;mxGeometry x=&quot;775&quot; y=&quot;175&quot; width=&quot;30&quot; height=&quot;30&quot; as=&quot;geometry&quot; /&gt;&#10;        &lt;/mxCell&gt;&#10;        &lt;mxCell id=&quot;YD2cjV0bOqWloPQhhFmI-66&quot; value=&quot;5&quot; style=&quot;ellipse;whiteSpace=wrap;html=1;aspect=fixed;&quot; parent=&quot;1&quot; vertex=&quot;1&quot;&gt;&#10;          &lt;mxGeometry x=&quot;775&quot; y=&quot;280&quot; width=&quot;30&quot; height=&quot;30&quot; as=&quot;geometry&quot; /&gt;&#10;        &lt;/mxCell&gt;&#10;        &lt;mxCell id=&quot;YD2cjV0bOqWloPQhhFmI-67&quot; value=&quot;7&quot; style=&quot;ellipse;whiteSpace=wrap;html=1;aspect=fixed;&quot; parent=&quot;1&quot; vertex=&quot;1&quot;&gt;&#10;          &lt;mxGeometry x=&quot;775&quot; y=&quot;388&quot; width=&quot;30&quot; height=&quot;30&quot; as=&quot;geometry&quot; /&gt;&#10;        &lt;/mxCell&gt;&#10;        &lt;mxCell id=&quot;YD2cjV0bOqWloPQhhFmI-68&quot; value=&quot;10&quot; style=&quot;ellipse;whiteSpace=wrap;html=1;aspect=fixed;&quot; parent=&quot;1&quot; vertex=&quot;1&quot;&gt;&#10;          &lt;mxGeometry x=&quot;775&quot; y=&quot;700&quot; width=&quot;30&quot; height=&quot;30&quot; as=&quot;geometry&quot; /&gt;&#10;        &lt;/mxCell&gt;&#10;        &lt;mxCell id=&quot;YD2cjV0bOqWloPQhhFmI-70&quot; value=&quot;&quot; style=&quot;endArrow=classic;html=1;rounded=0;&quot; parent=&quot;1&quot; edge=&quot;1&quot;&gt;&#10;          &lt;mxGeometry width=&quot;50&quot; height=&quot;50&quot; relative=&quot;1&quot; as=&quot;geometry&quot;&gt;&#10;            &lt;mxPoint x=&quot;336&quot; y=&quot;552&quot; as=&quot;sourcePoint&quot; /&gt;&#10;            &lt;mxPoint x=&quot;760&quot; y=&quot;552&quot; as=&quot;targetPoint&quot; /&gt;&#10;          &lt;/mxGeometry&gt;&#10;        &lt;/mxCell&gt;&#10;        &lt;mxCell id=&quot;YD2cjV0bOqWloPQhhFmI-71&quot; value=&quot;Client credentials Grant RQ&amp;amp;nbsp;&amp;lt;div&amp;gt;&amp;lt;ul&amp;gt;&amp;lt;li style=&amp;quot;text-align: left;&amp;quot;&amp;gt;&amp;lt;span style=&amp;quot;background-color: transparent; color: light-dark(rgb(0, 0, 0), rgb(255, 255, 255));&amp;quot;&amp;gt;client_id&amp;amp;nbsp;&amp;lt;/span&amp;gt;&amp;lt;/li&amp;gt;&amp;lt;li style=&amp;quot;text-align: left;&amp;quot;&amp;gt;secret&amp;lt;/li&amp;gt;&amp;lt;/ul&amp;gt;&amp;lt;/div&amp;gt;&quot; style=&quot;text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;&quot; parent=&quot;1&quot; vertex=&quot;1&quot;&gt;&#10;          &lt;mxGeometry x=&quot;360&quot; y=&quot;480&quot; width=&quot;170&quot; height=&quot;80&quot; as=&quot;geometry&quot; /&gt;&#10;        &lt;/mxCell&gt;&#10;        &lt;mxCell id=&quot;YD2cjV0bOqWloPQhhFmI-72&quot; value=&quot;&quot; style=&quot;endArrow=classic;html=1;rounded=0;&quot; parent=&quot;1&quot; edge=&quot;1&quot;&gt;&#10;          &lt;mxGeometry width=&quot;50&quot; height=&quot;50&quot; relative=&quot;1&quot; as=&quot;geometry&quot;&gt;&#10;            &lt;mxPoint x=&quot;760&quot; y=&quot;602&quot; as=&quot;sourcePoint&quot; /&gt;&#10;            &lt;mxPoint x=&quot;336&quot; y=&quot;602&quot; as=&quot;targetPoint&quot; /&gt;&#10;          &lt;/mxGeometry&gt;&#10;        &lt;/mxCell&gt;&#10;        &lt;mxCell id=&quot;YD2cjV0bOqWloPQhhFmI-73&quot; value=&quot;Client credentials Acces token RS&quot; style=&quot;text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;&quot; parent=&quot;1&quot; vertex=&quot;1&quot;&gt;&#10;          &lt;mxGeometry x=&quot;355&quot; y=&quot;570&quot; width=&quot;200&quot; height=&quot;30&quot; as=&quot;geometry&quot; /&gt;&#10;        &lt;/mxCell&gt;&#10;        &lt;mxCell id=&quot;YD2cjV0bOqWloPQhhFmI-76&quot; value=&quot;9&quot; style=&quot;ellipse;whiteSpace=wrap;html=1;aspect=fixed;&quot; parent=&quot;1&quot; vertex=&quot;1&quot;&gt;&#10;          &lt;mxGeometry x=&quot;775&quot; y=&quot;537&quot; width=&quot;30&quot; height=&quot;30&quot; as=&quot;geometry&quot; /&gt;&#10;        &lt;/mxCell&gt;&#10;        &lt;mxCell id=&quot;YD2cjV0bOqWloPQhhFmI-77&quot; value=&quot;10&quot; style=&quot;ellipse;whiteSpace=wrap;html=1;aspect=fixed;&quot; parent=&quot;1&quot; vertex=&quot;1&quot;&gt;&#10;          &lt;mxGeometry x=&quot;775&quot; y=&quot;590&quot; width=&quot;30&quot; height=&quot;30&quot; as=&quot;geometry&quot; /&gt;&#10;        &lt;/mxCell&gt;&#10;      &lt;/root&gt;&#10;    &lt;/mxGraphModel&gt;&#10;  &lt;/diagram&gt;&#10;&lt;/mxfile&gt;&#10;\"><defs/><g><g data-cell-id=\"0\"><g data-cell-id=\"1\"><g data-cell-id=\"YD2cjV0bOqWloPQhhFmI-1\"><g><rect x=\"0\" y=\"1\" width=\"100\" height=\"40\" fill=\"#ffffff\" stroke=\"#000000\" pointer-events=\"all\" style=\"fill: light-dark(#ffffff, var(--ge-dark-color, #121212)); stroke: light-dark(rgb(0, 0, 0), rgb(255, 255, 255));\"/><path d=\"M 50 41 L 50 801\" fill=\"none\" stroke=\"#000000\" stroke-miterlimit=\"10\" stroke-dasharray=\"3 3\" pointer-events=\"all\" style=\"stroke: light-dark(rgb(0, 0, 0), rgb(255, 255, 255));\"/></g><g><g transform=\"translate(-0.5 -0.5)\"><switch><foreignObject style=\"overflow: visible; text-align: left;\" pointer-events=\"none\" width=\"100%\" height=\"100%\" requiredFeatures=\"http://www.w3.org/TR/SVG11/feature#Extensibility\"><div xmlns=\"http://www.w3.org/1999/xhtml\" style=\"display: flex; align-items: unsafe center; justify-content: unsafe center; width: 98px; height: 1px; padding-top: 21px; margin-left: 1px;\"><div style=\"box-sizing: border-box; font-size: 0; text-align: center; color: #000000; \"><div style=\"display: inline-block; font-size: 12px; font-family: &quot;Helvetica&quot;; color: light-dark(#000000, #ffffff); line-height: 1.2; pointer-events: all; white-space: normal; word-wrap: normal; \">User</div></div></div></foreignObject><text x=\"50\" y=\"25\" fill=\"light-dark(#000000, #ffffff)\" font-family=\"&quot;Helvetica&quot;\" font-size=\"12px\" text-anchor=\"middle\">User</text></switch></g></g></g><g data-cell-id=\"YD2cjV0bOqWloPQhhFmI-2\"><g><rect x=\"220\" y=\"1\" width=\"100\" height=\"40\" fill=\"#ffffff\" stroke=\"#000000\" pointer-events=\"all\" style=\"fill: light-dark(#ffffff, var(--ge-dark-color, #121212)); stroke: light-dark(rgb(0, 0, 0), rgb(255, 255, 255));\"/><path d=\"M 270 41 L 270 801\" fill=\"none\" stroke=\"#000000\" stroke-miterlimit=\"10\" stroke-dasharray=\"3 3\" pointer-events=\"all\" style=\"stroke: light-dark(rgb(0, 0, 0), rgb(255, 255, 255));\"/></g><g><g transform=\"translate(-0.5 -0.5)\"><switch><foreignObject style=\"overflow: visible; text-align: left;\" pointer-events=\"none\" width=\"100%\" height=\"100%\" requiredFeatures=\"http://www.w3.org/TR/SVG11/feature#Extensibility\"><div xmlns=\"http://www.w3.org/1999/xhtml\" style=\"display: flex; align-items: unsafe center; justify-content: unsafe center; width: 98px; height: 1px; padding-top: 21px; margin-left: 221px;\"><div style=\"box-sizing: border-box; font-size: 0; text-align: center; color: #000000; \"><div style=\"display: inline-block; font-size: 12px; font-family: &quot;Helvetica&quot;; color: light-dark(#000000, #ffffff); line-height: 1.2; pointer-events: all; white-space: normal; word-wrap: normal; \">Switchfly</div></div></div></foreignObject><text x=\"270\" y=\"25\" fill=\"light-dark(#000000, #ffffff)\" font-family=\"&quot;Helvetica&quot;\" font-size=\"12px\" text-anchor=\"middle\">Switchfly</text></switch></g></g><g data-cell-id=\"YD2cjV0bOqWloPQhhFmI-4\"><g><rect x=\"265\" y=\"71\" width=\"10\" height=\"320\" fill=\"#ffffff\" stroke=\"#000000\" pointer-events=\"all\" style=\"fill: light-dark(#ffffff, var(--ge-dark-color, #121212)); stroke: light-dark(rgb(0, 0, 0), rgb(255, 255, 255));\"/></g></g><g data-cell-id=\"YD2cjV0bOqWloPQhhFmI-5\"><g><rect x=\"266\" y=\"501\" width=\"10\" height=\"182\" fill=\"#ffffff\" stroke=\"#000000\" pointer-events=\"all\" style=\"fill: light-dark(#ffffff, var(--ge-dark-color, #121212)); stroke: light-dark(rgb(0, 0, 0), rgb(255, 255, 255));\"/></g></g></g><g data-cell-id=\"YD2cjV0bOqWloPQhhFmI-6\"><g><rect x=\"460\" y=\"1\" width=\"100\" height=\"40\" fill=\"#ffffff\" stroke=\"#000000\" pointer-events=\"all\" style=\"fill: light-dark(#ffffff, var(--ge-dark-color, #121212)); stroke: light-dark(rgb(0, 0, 0), rgb(255, 255, 255));\"/><path d=\"M 510 41 L 510 801\" fill=\"none\" stroke=\"#000000\" stroke-miterlimit=\"10\" stroke-dasharray=\"3 3\" pointer-events=\"all\" style=\"stroke: light-dark(rgb(0, 0, 0), rgb(255, 255, 255));\"/></g><g><g transform=\"translate(-0.5 -0.5)\"><switch><foreignObject style=\"overflow: visible; text-align: left;\" pointer-events=\"none\" width=\"100%\" height=\"100%\" requiredFeatures=\"http://www.w3.org/TR/SVG11/feature#Extensibility\"><div xmlns=\"http://www.w3.org/1999/xhtml\" style=\"display: flex; align-items: unsafe center; justify-content: unsafe center; width: 98px; height: 1px; padding-top: 21px; margin-left: 461px;\"><div style=\"box-sizing: border-box; font-size: 0; text-align: center; color: #000000; \"><div style=\"display: inline-block; font-size: 12px; font-family: &quot;Helvetica&quot;; color: light-dark(#000000, #ffffff); line-height: 1.2; pointer-events: all; white-space: normal; word-wrap: normal; \"><font style=\"font-size: 11px;\">3rd party<br />Authorization service</font></div></div></div></foreignObject><text x=\"510\" y=\"25\" fill=\"light-dark(#000000, #ffffff)\" font-family=\"&quot;Helvetica&quot;\" font-size=\"12px\" text-anchor=\"middle\">3rd party...</text></switch></g></g></g><g data-cell-id=\"YD2cjV0bOqWloPQhhFmI-8\"><g><rect x=\"650\" y=\"1\" width=\"100\" height=\"40\" fill=\"#ffffff\" stroke=\"#000000\" pointer-events=\"all\" style=\"fill: light-dark(#ffffff, var(--ge-dark-color, #121212)); stroke: light-dark(rgb(0, 0, 0), rgb(255, 255, 255));\"/><path d=\"M 700 41 L 700 801\" fill=\"none\" stroke=\"#000000\" stroke-miterlimit=\"10\" stroke-dasharray=\"3 3\" pointer-events=\"all\" style=\"stroke: light-dark(rgb(0, 0, 0), rgb(255, 255, 255));\"/></g><g><g transform=\"translate(-0.5 -0.5)\"><switch><foreignObject style=\"overflow: visible; text-align: left;\" pointer-events=\"none\" width=\"100%\" height=\"100%\" requiredFeatures=\"http://www.w3.org/TR/SVG11/feature#Extensibility\"><div xmlns=\"http://www.w3.org/1999/xhtml\" style=\"display: flex; align-items: unsafe center; justify-content: unsafe center; width: 98px; height: 1px; padding-top: 21px; margin-left: 651px;\"><div style=\"box-sizing: border-box; font-size: 0; text-align: center; color: #000000; \"><div style=\"display: inline-block; font-size: 12px; font-family: &quot;Helvetica&quot;; color: light-dark(#000000, #ffffff); line-height: 1.2; pointer-events: all; white-space: normal; word-wrap: normal; \">3rd party<br />Redemption API</div></div></div></foreignObject><text x=\"700\" y=\"25\" fill=\"light-dark(#000000, #ffffff)\" font-family=\"&quot;Helvetica&quot;\" font-size=\"12px\" text-anchor=\"middle\">3rd party...</text></switch></g></g></g><g data-cell-id=\"YD2cjV0bOqWloPQhhFmI-27\"><g><path d=\"M 280.5 218 L 693.63 218\" fill=\"none\" stroke=\"#000000\" stroke-miterlimit=\"10\" pointer-events=\"stroke\" style=\"stroke: light-dark(rgb(0, 0, 0), rgb(255, 255, 255));\"/><path d=\"M 698.88 218 L 691.88 221.5 L 693.63 218 L 691.88 214.5 Z\" fill=\"#000000\" stroke=\"#000000\" stroke-miterlimit=\"10\" pointer-events=\"all\" style=\"fill: light-dark(rgb(0, 0, 0), rgb(255, 255, 255)); stroke: light-dark(rgb(0, 0, 0), rgb(255, 255, 255));\"/></g></g><g data-cell-id=\"YD2cjV0bOqWloPQhhFmI-28\"><g><rect x=\"280.5\" y=\"188\" width=\"200\" height=\"30\" fill=\"none\" stroke=\"none\" pointer-events=\"all\"/></g><g><g transform=\"translate(-0.5 -0.5)\"><switch><foreignObject style=\"overflow: visible; text-align: left;\" pointer-events=\"none\" width=\"100%\" height=\"100%\" requiredFeatures=\"http://www.w3.org/TR/SVG11/feature#Extensibility\"><div xmlns=\"http://www.w3.org/1999/xhtml\" style=\"display: flex; align-items: unsafe center; justify-content: unsafe center; width: 1px; height: 1px; padding-top: 203px; margin-left: 381px;\"><div style=\"box-sizing: border-box; font-size: 0; text-align: center; color: #000000; \"><div style=\"display: inline-block; font-size: 12px; font-family: &quot;Helvetica&quot;; color: light-dark(#000000, #ffffff); line-height: 1.2; pointer-events: all; white-space: nowrap; \">Redemption RQ + access_token</div></div></div></foreignObject><text x=\"381\" y=\"207\" fill=\"light-dark(#000000, #ffffff)\" font-family=\"&quot;Helvetica&quot;\" font-size=\"12px\" text-anchor=\"middle\">Redemption RQ + access_token</text></switch></g></g></g><g data-cell-id=\"YD2cjV0bOqWloPQhhFmI-29\"><g><path d=\"M 699.5 252 L 286.87 252\" fill=\"none\" stroke=\"#000000\" stroke-miterlimit=\"10\" pointer-events=\"stroke\" style=\"stroke: light-dark(rgb(0, 0, 0), rgb(255, 255, 255));\"/><path d=\"M 281.62 252 L 288.62 248.5 L 286.87 252 L 288.62 255.5 Z\" fill=\"#000000\" stroke=\"#000000\" stroke-miterlimit=\"10\" pointer-events=\"all\" style=\"fill: light-dark(rgb(0, 0, 0), rgb(255, 255, 255)); stroke: light-dark(rgb(0, 0, 0), rgb(255, 255, 255));\"/></g></g><g data-cell-id=\"YD2cjV0bOqWloPQhhFmI-30\"><g><rect x=\"285.5\" y=\"221\" width=\"180\" height=\"30\" fill=\"none\" stroke=\"none\" pointer-events=\"all\"/></g><g><g transform=\"translate(-0.5 -0.5)\"><switch><foreignObject style=\"overflow: visible; text-align: left;\" pointer-events=\"none\" width=\"100%\" height=\"100%\" requiredFeatures=\"http://www.w3.org/TR/SVG11/feature#Extensibility\"><div xmlns=\"http://www.w3.org/1999/xhtml\" style=\"display: flex; align-items: unsafe center; justify-content: unsafe center; width: 1px; height: 1px; padding-top: 236px; margin-left: 376px;\"><div style=\"box-sizing: border-box; font-size: 0; text-align: center; color: #000000; \"><div style=\"display: inline-block; font-size: 12px; font-family: &quot;Helvetica&quot;; color: light-dark(#000000, #ffffff); line-height: 1.2; pointer-events: all; white-space: nowrap; \">Redemption Confirmation RS</div></div></div></foreignObject><text x=\"376\" y=\"240\" fill=\"light-dark(#000000, #ffffff)\" font-family=\"&quot;Helvetica&quot;\" font-size=\"12px\" text-anchor=\"middle\">Redemption Confirmation RS</text></switch></g></g></g><g data-cell-id=\"YD2cjV0bOqWloPQhhFmI-31\"><g><path d=\"M 49.39 219.89 L 180 219.89 L 258.63 219.89\" fill=\"none\" stroke=\"#000000\" stroke-miterlimit=\"10\" pointer-events=\"stroke\" style=\"stroke: light-dark(rgb(0, 0, 0), rgb(255, 255, 255));\"/><path d=\"M 263.88 219.89 L 256.88 223.39 L 258.63 219.89 L 256.88 216.39 Z\" fill=\"#000000\" stroke=\"#000000\" stroke-miterlimit=\"10\" pointer-events=\"all\" style=\"fill: light-dark(rgb(0, 0, 0), rgb(255, 255, 255)); stroke: light-dark(rgb(0, 0, 0), rgb(255, 255, 255));\"/></g></g><g data-cell-id=\"YD2cjV0bOqWloPQhhFmI-32\"><g><rect x=\"80\" y=\"189.89\" width=\"170\" height=\"30\" fill=\"none\" stroke=\"none\" pointer-events=\"all\"/></g><g><g transform=\"translate(-0.5 -0.5)\"><switch><foreignObject style=\"overflow: visible; text-align: left;\" pointer-events=\"none\" width=\"100%\" height=\"100%\" requiredFeatures=\"http://www.w3.org/TR/SVG11/feature#Extensibility\"><div xmlns=\"http://www.w3.org/1999/xhtml\" style=\"display: flex; align-items: unsafe center; justify-content: unsafe center; width: 1px; height: 1px; padding-top: 205px; margin-left: 165px;\"><div style=\"box-sizing: border-box; font-size: 0; text-align: center; color: #000000; \"><div style=\"display: inline-block; font-size: 12px; font-family: &quot;Helvetica&quot;; color: light-dark(#000000, #ffffff); line-height: 1.2; pointer-events: all; white-space: nowrap; \">Checkout Redeem Product</div></div></div></foreignObject><text x=\"165\" y=\"208\" fill=\"light-dark(#000000, #ffffff)\" font-family=\"&quot;Helvetica&quot;\" font-size=\"12px\" text-anchor=\"middle\">Checkout Redeem Product</text></switch></g></g></g><g data-cell-id=\"YD2cjV0bOqWloPQhhFmI-33\"><g><path d=\"M 276 623 L 693.63 623\" fill=\"none\" stroke=\"#000000\" stroke-miterlimit=\"10\" pointer-events=\"stroke\" style=\"stroke: light-dark(rgb(0, 0, 0), rgb(255, 255, 255));\"/><path d=\"M 698.88 623 L 691.88 626.5 L 693.63 623 L 691.88 619.5 Z\" fill=\"#000000\" stroke=\"#000000\" stroke-miterlimit=\"10\" pointer-events=\"all\" style=\"fill: light-dark(rgb(0, 0, 0), rgb(255, 255, 255)); stroke: light-dark(rgb(0, 0, 0), rgb(255, 255, 255));\"/></g></g><g data-cell-id=\"YD2cjV0bOqWloPQhhFmI-34\"><g><rect x=\"295.5\" y=\"591\" width=\"170\" height=\"30\" fill=\"none\" stroke=\"none\" pointer-events=\"all\"/></g><g><g transform=\"translate(-0.5 -0.5)\"><switch><foreignObject style=\"overflow: visible; text-align: left;\" pointer-events=\"none\" width=\"100%\" height=\"100%\" requiredFeatures=\"http://www.w3.org/TR/SVG11/feature#Extensibility\"><div xmlns=\"http://www.w3.org/1999/xhtml\" style=\"display: flex; align-items: unsafe center; justify-content: unsafe center; width: 1px; height: 1px; padding-top: 606px; margin-left: 381px;\"><div style=\"box-sizing: border-box; font-size: 0; text-align: center; color: #000000; \"><div style=\"display: inline-block; font-size: 12px; font-family: &quot;Helvetica&quot;; color: light-dark(#000000, #ffffff); line-height: 1.2; pointer-events: all; white-space: nowrap; \">Refund RQ + access token</div></div></div></foreignObject><text x=\"381\" y=\"610\" fill=\"light-dark(#000000, #ffffff)\" font-family=\"&quot;Helvetica&quot;\" font-size=\"12px\" text-anchor=\"middle\">Refund RQ + access token</text></switch></g></g></g><g data-cell-id=\"YD2cjV0bOqWloPQhhFmI-35\"><g><path d=\"M 700 673 L 282.37 673\" fill=\"none\" stroke=\"#000000\" stroke-miterlimit=\"10\" pointer-events=\"stroke\" style=\"stroke: light-dark(rgb(0, 0, 0), rgb(255, 255, 255));\"/><path d=\"M 277.12 673 L 284.12 669.5 L 282.37 673 L 284.12 676.5 Z\" fill=\"#000000\" stroke=\"#000000\" stroke-miterlimit=\"10\" pointer-events=\"all\" style=\"fill: light-dark(rgb(0, 0, 0), rgb(255, 255, 255)); stroke: light-dark(rgb(0, 0, 0), rgb(255, 255, 255));\"/></g></g><g data-cell-id=\"YD2cjV0bOqWloPQhhFmI-36\"><g><rect x=\"355\" y=\"641\" width=\"80\" height=\"30\" fill=\"none\" stroke=\"none\" pointer-events=\"all\"/></g><g><g transform=\"translate(-0.5 -0.5)\"><switch><foreignObject style=\"overflow: visible; text-align: left;\" pointer-events=\"none\" width=\"100%\" height=\"100%\" requiredFeatures=\"http://www.w3.org/TR/SVG11/feature#Extensibility\"><div xmlns=\"http://www.w3.org/1999/xhtml\" style=\"display: flex; align-items: unsafe center; justify-content: unsafe center; width: 1px; height: 1px; padding-top: 656px; margin-left: 395px;\"><div style=\"box-sizing: border-box; font-size: 0; text-align: center; color: #000000; \"><div style=\"display: inline-block; font-size: 12px; font-family: &quot;Helvetica&quot;; color: light-dark(#000000, #ffffff); line-height: 1.2; pointer-events: all; white-space: nowrap; \">Refund RS</div></div></div></foreignObject><text x=\"395\" y=\"660\" fill=\"light-dark(#000000, #ffffff)\" font-family=\"&quot;Helvetica&quot;\" font-size=\"12px\" text-anchor=\"middle\">Refund RS</text></switch></g></g></g><g data-cell-id=\"YD2cjV0bOqWloPQhhFmI-37\"><g><rect x=\"145\" y=\"621\" width=\"120\" height=\"30\" fill=\"none\" stroke=\"none\" pointer-events=\"all\"/></g><g><g transform=\"translate(-0.5 -0.5)\"><switch><foreignObject style=\"overflow: visible; text-align: left;\" pointer-events=\"none\" width=\"100%\" height=\"100%\" requiredFeatures=\"http://www.w3.org/TR/SVG11/feature#Extensibility\"><div xmlns=\"http://www.w3.org/1999/xhtml\" style=\"display: flex; align-items: unsafe center; justify-content: unsafe center; width: 1px; height: 1px; padding-top: 636px; margin-left: 205px;\"><div style=\"box-sizing: border-box; font-size: 0; text-align: center; color: #000000; \"><div style=\"display: inline-block; font-size: 12px; font-family: &quot;Helvetica&quot;; color: light-dark(#000000, #ffffff); line-height: 1.2; pointer-events: all; white-space: nowrap; \">Refund autocancel</div></div></div></foreignObject><text x=\"205\" y=\"640\" fill=\"light-dark(#000000, #ffffff)\" font-family=\"&quot;Helvetica&quot;\" font-size=\"12px\" text-anchor=\"middle\">Refund autocancel</text></switch></g></g></g><g data-cell-id=\"YD2cjV0bOqWloPQhhFmI-51\"><g><ellipse cx=\"75\" cy=\"204.89\" rx=\"15\" ry=\"15\" fill=\"#ffffff\" stroke=\"#000000\" pointer-events=\"all\" style=\"fill: light-dark(#ffffff, var(--ge-dark-color, #121212)); stroke: light-dark(rgb(0, 0, 0), rgb(255, 255, 255));\"/></g><g><g transform=\"translate(-0.5 -0.5)\"><switch><foreignObject style=\"overflow: visible; text-align: left;\" pointer-events=\"none\" width=\"100%\" height=\"100%\" requiredFeatures=\"http://www.w3.org/TR/SVG11/feature#Extensibility\"><div xmlns=\"http://www.w3.org/1999/xhtml\" style=\"display: flex; align-items: unsafe center; justify-content: unsafe center; width: 28px; height: 1px; padding-top: 205px; margin-left: 61px;\"><div style=\"box-sizing: border-box; font-size: 0; text-align: center; color: #000000; \"><div style=\"display: inline-block; font-size: 12px; font-family: &quot;Helvetica&quot;; color: light-dark(#000000, #ffffff); line-height: 1.2; pointer-events: all; white-space: normal; word-wrap: normal; \">1</div></div></div></foreignObject><text x=\"75\" y=\"208\" fill=\"light-dark(#000000, #ffffff)\" font-family=\"&quot;Helvetica&quot;\" font-size=\"12px\" text-anchor=\"middle\">1</text></switch></g></g></g><g data-cell-id=\"YD2cjV0bOqWloPQhhFmI-52\"><g><ellipse cx=\"730\" cy=\"107\" rx=\"15\" ry=\"15\" fill=\"#ffffff\" stroke=\"#000000\" pointer-events=\"all\" style=\"fill: light-dark(#ffffff, var(--ge-dark-color, #121212)); stroke: light-dark(rgb(0, 0, 0), rgb(255, 255, 255));\"/></g><g><g transform=\"translate(-0.5 -0.5)\"><switch><foreignObject style=\"overflow: visible; text-align: left;\" pointer-events=\"none\" width=\"100%\" height=\"100%\" requiredFeatures=\"http://www.w3.org/TR/SVG11/feature#Extensibility\"><div xmlns=\"http://www.w3.org/1999/xhtml\" style=\"display: flex; align-items: unsafe center; justify-content: unsafe center; width: 28px; height: 1px; padding-top: 107px; margin-left: 716px;\"><div style=\"box-sizing: border-box; font-size: 0; text-align: center; color: #000000; \"><div style=\"display: inline-block; font-size: 12px; font-family: &quot;Helvetica&quot;; color: light-dark(#000000, #ffffff); line-height: 1.2; pointer-events: all; white-space: normal; word-wrap: normal; \">2</div></div></div></foreignObject><text x=\"730\" y=\"111\" fill=\"light-dark(#000000, #ffffff)\" font-family=\"&quot;Helvetica&quot;\" font-size=\"12px\" text-anchor=\"middle\">2</text></switch></g></g></g><g data-cell-id=\"YD2cjV0bOqWloPQhhFmI-53\"><g><ellipse cx=\"205\" cy=\"593\" rx=\"15\" ry=\"15\" fill=\"#ffffff\" stroke=\"#000000\" pointer-events=\"all\" style=\"fill: light-dark(#ffffff, var(--ge-dark-color, #121212)); stroke: light-dark(rgb(0, 0, 0), rgb(255, 255, 255));\"/></g><g><g transform=\"translate(-0.5 -0.5)\"><switch><foreignObject style=\"overflow: visible; text-align: left;\" pointer-events=\"none\" width=\"100%\" height=\"100%\" requiredFeatures=\"http://www.w3.org/TR/SVG11/feature#Extensibility\"><div xmlns=\"http://www.w3.org/1999/xhtml\" style=\"display: flex; align-items: unsafe center; justify-content: unsafe center; width: 28px; height: 1px; padding-top: 593px; margin-left: 191px;\"><div style=\"box-sizing: border-box; font-size: 0; text-align: center; color: #000000; \"><div style=\"display: inline-block; font-size: 12px; font-family: &quot;Helvetica&quot;; color: light-dark(#000000, #ffffff); line-height: 1.2; pointer-events: all; white-space: normal; word-wrap: normal; \">8</div></div></div></foreignObject><text x=\"205\" y=\"597\" fill=\"light-dark(#000000, #ffffff)\" font-family=\"&quot;Helvetica&quot;\" font-size=\"12px\" text-anchor=\"middle\">8</text></switch></g></g></g><g data-cell-id=\"YD2cjV0bOqWloPQhhFmI-54\"><g><ellipse cx=\"730\" cy=\"623\" rx=\"15\" ry=\"15\" fill=\"#ffffff\" stroke=\"#000000\" pointer-events=\"all\" style=\"fill: light-dark(#ffffff, var(--ge-dark-color, #121212)); stroke: light-dark(rgb(0, 0, 0), rgb(255, 255, 255));\"/></g><g><g transform=\"translate(-0.5 -0.5)\"><switch><foreignObject style=\"overflow: visible; text-align: left;\" pointer-events=\"none\" width=\"100%\" height=\"100%\" requiredFeatures=\"http://www.w3.org/TR/SVG11/feature#Extensibility\"><div xmlns=\"http://www.w3.org/1999/xhtml\" style=\"display: flex; align-items: unsafe center; justify-content: unsafe center; width: 28px; height: 1px; padding-top: 623px; margin-left: 716px;\"><div style=\"box-sizing: border-box; font-size: 0; text-align: center; color: #000000; \"><div style=\"display: inline-block; font-size: 12px; font-family: &quot;Helvetica&quot;; color: light-dark(#000000, #ffffff); line-height: 1.2; pointer-events: all; white-space: normal; word-wrap: normal; \">9</div></div></div></foreignObject><text x=\"730\" y=\"627\" fill=\"light-dark(#000000, #ffffff)\" font-family=\"&quot;Helvetica&quot;\" font-size=\"12px\" text-anchor=\"middle\">9</text></switch></g></g></g><g data-cell-id=\"YD2cjV0bOqWloPQhhFmI-55\"><g><path d=\"M 275 319 L 693.13 319\" fill=\"none\" stroke=\"#000000\" stroke-miterlimit=\"10\" pointer-events=\"stroke\" style=\"stroke: light-dark(rgb(0, 0, 0), rgb(255, 255, 255));\"/><path d=\"M 698.38 319 L 691.38 322.5 L 693.13 319 L 691.38 315.5 Z\" fill=\"#000000\" stroke=\"#000000\" stroke-miterlimit=\"10\" pointer-events=\"all\" style=\"fill: light-dark(rgb(0, 0, 0), rgb(255, 255, 255)); stroke: light-dark(rgb(0, 0, 0), rgb(255, 255, 255));\"/></g></g><g data-cell-id=\"YD2cjV0bOqWloPQhhFmI-56\"><g><rect x=\"280.5\" y=\"286\" width=\"210\" height=\"30\" fill=\"none\" stroke=\"none\" pointer-events=\"all\"/></g><g><g transform=\"translate(-0.5 -0.5)\"><switch><foreignObject style=\"overflow: visible; text-align: left;\" pointer-events=\"none\" width=\"100%\" height=\"100%\" requiredFeatures=\"http://www.w3.org/TR/SVG11/feature#Extensibility\"><div xmlns=\"http://www.w3.org/1999/xhtml\" style=\"display: flex; align-items: unsafe center; justify-content: unsafe center; width: 1px; height: 1px; padding-top: 301px; margin-left: 386px;\"><div style=\"box-sizing: border-box; font-size: 0; text-align: center; color: #000000; \"><div style=\"display: inline-block; font-size: 12px; font-family: &quot;Helvetica&quot;; color: light-dark(#000000, #ffffff); line-height: 1.2; pointer-events: all; white-space: nowrap; \">Traveler Profile RQ + access_token</div></div></div></foreignObject><text x=\"386\" y=\"305\" fill=\"light-dark(#000000, #ffffff)\" font-family=\"&quot;Helvetica&quot;\" font-size=\"12px\" text-anchor=\"middle\">Traveler Profile RQ + access_token</text></switch></g></g></g><g data-cell-id=\"YD2cjV0bOqWloPQhhFmI-57\"><g><path d=\"M 700 361 L 281.87 361\" fill=\"none\" stroke=\"#000000\" stroke-miterlimit=\"10\" pointer-events=\"stroke\" style=\"stroke: light-dark(rgb(0, 0, 0), rgb(255, 255, 255));\"/><path d=\"M 276.62 361 L 283.62 357.5 L 281.87 361 L 283.62 364.5 Z\" fill=\"#000000\" stroke=\"#000000\" stroke-miterlimit=\"10\" pointer-events=\"all\" style=\"fill: light-dark(rgb(0, 0, 0), rgb(255, 255, 255)); stroke: light-dark(rgb(0, 0, 0), rgb(255, 255, 255));\"/></g></g><g data-cell-id=\"YD2cjV0bOqWloPQhhFmI-58\"><g><rect x=\"290.5\" y=\"331\" width=\"120\" height=\"30\" fill=\"none\" stroke=\"none\" pointer-events=\"all\"/></g><g><g transform=\"translate(-0.5 -0.5)\"><switch><foreignObject style=\"overflow: visible; text-align: left;\" pointer-events=\"none\" width=\"100%\" height=\"100%\" requiredFeatures=\"http://www.w3.org/TR/SVG11/feature#Extensibility\"><div xmlns=\"http://www.w3.org/1999/xhtml\" style=\"display: flex; align-items: unsafe center; justify-content: unsafe flex-start; width: 1px; height: 1px; padding-top: 346px; margin-left: 293px;\"><div style=\"box-sizing: border-box; font-size: 0; text-align: left; color: #000000; \"><div style=\"display: inline-block; font-size: 12px; font-family: &quot;Helvetica&quot;; color: light-dark(#000000, #ffffff); line-height: 1.2; pointer-events: all; white-space: nowrap; \">Traveler Profile RS</div></div></div></foreignObject><text x=\"293\" y=\"350\" fill=\"light-dark(#000000, #ffffff)\" font-family=\"&quot;Helvetica&quot;\" font-size=\"12px\">Traveler Profile RS</text></switch></g></g></g><g data-cell-id=\"YD2cjV0bOqWloPQhhFmI-59\"><g><ellipse cx=\"730\" cy=\"319\" rx=\"15\" ry=\"15\" fill=\"#ffffff\" stroke=\"#000000\" pointer-events=\"all\" style=\"fill: light-dark(#ffffff, var(--ge-dark-color, #121212)); stroke: light-dark(rgb(0, 0, 0), rgb(255, 255, 255));\"/></g><g><g transform=\"translate(-0.5 -0.5)\"><switch><foreignObject style=\"overflow: visible; text-align: left;\" pointer-events=\"none\" width=\"100%\" height=\"100%\" requiredFeatures=\"http://www.w3.org/TR/SVG11/feature#Extensibility\"><div xmlns=\"http://www.w3.org/1999/xhtml\" style=\"display: flex; align-items: unsafe center; justify-content: unsafe center; width: 28px; height: 1px; padding-top: 319px; margin-left: 716px;\"><div style=\"box-sizing: border-box; font-size: 0; text-align: center; color: #000000; \"><div style=\"display: inline-block; font-size: 12px; font-family: &quot;Helvetica&quot;; color: light-dark(#000000, #ffffff); line-height: 1.2; pointer-events: all; white-space: normal; word-wrap: normal; \">6</div></div></div></foreignObject><text x=\"730\" y=\"323\" fill=\"light-dark(#000000, #ffffff)\" font-family=\"&quot;Helvetica&quot;\" font-size=\"12px\" text-anchor=\"middle\">6</text></switch></g></g></g><g data-cell-id=\"YD2cjV0bOqWloPQhhFmI-60\"><g><path d=\"M 280 111 L 693.88 111\" fill=\"none\" stroke=\"#000000\" stroke-miterlimit=\"10\" pointer-events=\"stroke\" style=\"stroke: light-dark(rgb(0, 0, 0), rgb(255, 255, 255));\"/><path d=\"M 699.13 111 L 692.13 114.5 L 693.88 111 L 692.13 107.5 Z\" fill=\"#000000\" stroke=\"#000000\" stroke-miterlimit=\"10\" pointer-events=\"all\" style=\"fill: light-dark(rgb(0, 0, 0), rgb(255, 255, 255)); stroke: light-dark(rgb(0, 0, 0), rgb(255, 255, 255));\"/></g></g><g data-cell-id=\"YD2cjV0bOqWloPQhhFmI-61\"><g><rect x=\"280\" y=\"79\" width=\"210\" height=\"30\" fill=\"none\" stroke=\"none\" pointer-events=\"all\"/></g><g><g transform=\"translate(-0.5 -0.5)\"><switch><foreignObject style=\"overflow: visible; text-align: left;\" pointer-events=\"none\" width=\"100%\" height=\"100%\" requiredFeatures=\"http://www.w3.org/TR/SVG11/feature#Extensibility\"><div xmlns=\"http://www.w3.org/1999/xhtml\" style=\"display: flex; align-items: unsafe center; justify-content: unsafe center; width: 1px; height: 1px; padding-top: 94px; margin-left: 385px;\"><div style=\"box-sizing: border-box; font-size: 0; text-align: center; color: #000000; \"><div style=\"display: inline-block; font-size: 12px; font-family: &quot;Helvetica&quot;; color: light-dark(#000000, #ffffff); line-height: 1.2; pointer-events: all; white-space: nowrap; \">Traveler Profile RQ + access_token</div></div></div></foreignObject><text x=\"385\" y=\"98\" fill=\"light-dark(#000000, #ffffff)\" font-family=\"&quot;Helvetica&quot;\" font-size=\"12px\" text-anchor=\"middle\">Traveler Profile RQ + access_token</text></switch></g></g></g><g data-cell-id=\"YD2cjV0bOqWloPQhhFmI-62\"><g><path d=\"M 699.5 149 L 281.87 149\" fill=\"none\" stroke=\"#000000\" stroke-miterlimit=\"10\" pointer-events=\"stroke\" style=\"stroke: light-dark(rgb(0, 0, 0), rgb(255, 255, 255));\"/><path d=\"M 276.62 149 L 283.62 145.5 L 281.87 149 L 283.62 152.5 Z\" fill=\"#000000\" stroke=\"#000000\" stroke-miterlimit=\"10\" pointer-events=\"all\" style=\"fill: light-dark(rgb(0, 0, 0), rgb(255, 255, 255)); stroke: light-dark(rgb(0, 0, 0), rgb(255, 255, 255));\"/></g></g><g data-cell-id=\"YD2cjV0bOqWloPQhhFmI-63\"><g><rect x=\"290.5\" y=\"122\" width=\"120\" height=\"30\" fill=\"none\" stroke=\"none\" pointer-events=\"all\"/></g><g><g transform=\"translate(-0.5 -0.5)\"><switch><foreignObject style=\"overflow: visible; text-align: left;\" pointer-events=\"none\" width=\"100%\" height=\"100%\" requiredFeatures=\"http://www.w3.org/TR/SVG11/feature#Extensibility\"><div xmlns=\"http://www.w3.org/1999/xhtml\" style=\"display: flex; align-items: unsafe center; justify-content: unsafe flex-start; width: 1px; height: 1px; padding-top: 137px; margin-left: 293px;\"><div style=\"box-sizing: border-box; font-size: 0; text-align: left; color: #000000; \"><div style=\"display: inline-block; font-size: 12px; font-family: &quot;Helvetica&quot;; color: light-dark(#000000, #ffffff); line-height: 1.2; pointer-events: all; white-space: nowrap; \">Traveler Profile RS</div></div></div></foreignObject><text x=\"293\" y=\"141\" fill=\"light-dark(#000000, #ffffff)\" font-family=\"&quot;Helvetica&quot;\" font-size=\"12px\">Traveler Profile RS</text></switch></g></g></g><g data-cell-id=\"YD2cjV0bOqWloPQhhFmI-64\"><g><ellipse cx=\"730\" cy=\"216\" rx=\"15\" ry=\"15\" fill=\"#ffffff\" stroke=\"#000000\" pointer-events=\"all\" style=\"fill: light-dark(#ffffff, var(--ge-dark-color, #121212)); stroke: light-dark(rgb(0, 0, 0), rgb(255, 255, 255));\"/></g><g><g transform=\"translate(-0.5 -0.5)\"><switch><foreignObject style=\"overflow: visible; text-align: left;\" pointer-events=\"none\" width=\"100%\" height=\"100%\" requiredFeatures=\"http://www.w3.org/TR/SVG11/feature#Extensibility\"><div xmlns=\"http://www.w3.org/1999/xhtml\" style=\"display: flex; align-items: unsafe center; justify-content: unsafe center; width: 28px; height: 1px; padding-top: 216px; margin-left: 716px;\"><div style=\"box-sizing: border-box; font-size: 0; text-align: center; color: #000000; \"><div style=\"display: inline-block; font-size: 12px; font-family: &quot;Helvetica&quot;; color: light-dark(#000000, #ffffff); line-height: 1.2; pointer-events: all; white-space: normal; word-wrap: normal; \">4</div></div></div></foreignObject><text x=\"730\" y=\"220\" fill=\"light-dark(#000000, #ffffff)\" font-family=\"&quot;Helvetica&quot;\" font-size=\"12px\" text-anchor=\"middle\">4</text></switch></g></g></g><g data-cell-id=\"YD2cjV0bOqWloPQhhFmI-65\"><g><ellipse cx=\"730\" cy=\"151\" rx=\"15\" ry=\"15\" fill=\"#ffffff\" stroke=\"#000000\" pointer-events=\"all\" style=\"fill: light-dark(#ffffff, var(--ge-dark-color, #121212)); stroke: light-dark(rgb(0, 0, 0), rgb(255, 255, 255));\"/></g><g><g transform=\"translate(-0.5 -0.5)\"><switch><foreignObject style=\"overflow: visible; text-align: left;\" pointer-events=\"none\" width=\"100%\" height=\"100%\" requiredFeatures=\"http://www.w3.org/TR/SVG11/feature#Extensibility\"><div xmlns=\"http://www.w3.org/1999/xhtml\" style=\"display: flex; align-items: unsafe center; justify-content: unsafe center; width: 28px; height: 1px; padding-top: 151px; margin-left: 716px;\"><div style=\"box-sizing: border-box; font-size: 0; text-align: center; color: #000000; \"><div style=\"display: inline-block; font-size: 12px; font-family: &quot;Helvetica&quot;; color: light-dark(#000000, #ffffff); line-height: 1.2; pointer-events: all; white-space: normal; word-wrap: normal; \">3</div></div></div></foreignObject><text x=\"730\" y=\"155\" fill=\"light-dark(#000000, #ffffff)\" font-family=\"&quot;Helvetica&quot;\" font-size=\"12px\" text-anchor=\"middle\">3</text></switch></g></g></g><g data-cell-id=\"YD2cjV0bOqWloPQhhFmI-66\"><g><ellipse cx=\"730\" cy=\"256\" rx=\"15\" ry=\"15\" fill=\"#ffffff\" stroke=\"#000000\" pointer-events=\"all\" style=\"fill: light-dark(#ffffff, var(--ge-dark-color, #121212)); stroke: light-dark(rgb(0, 0, 0), rgb(255, 255, 255));\"/></g><g><g transform=\"translate(-0.5 -0.5)\"><switch><foreignObject style=\"overflow: visible; text-align: left;\" pointer-events=\"none\" width=\"100%\" height=\"100%\" requiredFeatures=\"http://www.w3.org/TR/SVG11/feature#Extensibility\"><div xmlns=\"http://www.w3.org/1999/xhtml\" style=\"display: flex; align-items: unsafe center; justify-content: unsafe center; width: 28px; height: 1px; padding-top: 256px; margin-left: 716px;\"><div style=\"box-sizing: border-box; font-size: 0; text-align: center; color: #000000; \"><div style=\"display: inline-block; font-size: 12px; font-family: &quot;Helvetica&quot;; color: light-dark(#000000, #ffffff); line-height: 1.2; pointer-events: all; white-space: normal; word-wrap: normal; \">5</div></div></div></foreignObject><text x=\"730\" y=\"260\" fill=\"light-dark(#000000, #ffffff)\" font-family=\"&quot;Helvetica&quot;\" font-size=\"12px\" text-anchor=\"middle\">5</text></switch></g></g></g><g data-cell-id=\"YD2cjV0bOqWloPQhhFmI-67\"><g><ellipse cx=\"730\" cy=\"364\" rx=\"15\" ry=\"15\" fill=\"#ffffff\" stroke=\"#000000\" pointer-events=\"all\" style=\"fill: light-dark(#ffffff, var(--ge-dark-color, #121212)); stroke: light-dark(rgb(0, 0, 0), rgb(255, 255, 255));\"/></g><g><g transform=\"translate(-0.5 -0.5)\"><switch><foreignObject style=\"overflow: visible; text-align: left;\" pointer-events=\"none\" width=\"100%\" height=\"100%\" requiredFeatures=\"http://www.w3.org/TR/SVG11/feature#Extensibility\"><div xmlns=\"http://www.w3.org/1999/xhtml\" style=\"display: flex; align-items: unsafe center; justify-content: unsafe center; width: 28px; height: 1px; padding-top: 364px; margin-left: 716px;\"><div style=\"box-sizing: border-box; font-size: 0; text-align: center; color: #000000; \"><div style=\"display: inline-block; font-size: 12px; font-family: &quot;Helvetica&quot;; color: light-dark(#000000, #ffffff); line-height: 1.2; pointer-events: all; white-space: normal; word-wrap: normal; \">7</div></div></div></foreignObject><text x=\"730\" y=\"368\" fill=\"light-dark(#000000, #ffffff)\" font-family=\"&quot;Helvetica&quot;\" font-size=\"12px\" text-anchor=\"middle\">7</text></switch></g></g></g><g data-cell-id=\"YD2cjV0bOqWloPQhhFmI-68\"><g><ellipse cx=\"730\" cy=\"676\" rx=\"15\" ry=\"15\" fill=\"#ffffff\" stroke=\"#000000\" pointer-events=\"all\" style=\"fill: light-dark(#ffffff, var(--ge-dark-color, #121212)); stroke: light-dark(rgb(0, 0, 0), rgb(255, 255, 255));\"/></g><g><g transform=\"translate(-0.5 -0.5)\"><switch><foreignObject style=\"overflow: visible; text-align: left;\" pointer-events=\"none\" width=\"100%\" height=\"100%\" requiredFeatures=\"http://www.w3.org/TR/SVG11/feature#Extensibility\"><div xmlns=\"http://www.w3.org/1999/xhtml\" style=\"display: flex; align-items: unsafe center; justify-content: unsafe center; width: 28px; height: 1px; padding-top: 676px; margin-left: 716px;\"><div style=\"box-sizing: border-box; font-size: 0; text-align: center; color: #000000; \"><div style=\"display: inline-block; font-size: 12px; font-family: &quot;Helvetica&quot;; color: light-dark(#000000, #ffffff); line-height: 1.2; pointer-events: all; white-space: normal; word-wrap: normal; \">10</div></div></div></foreignObject><text x=\"730\" y=\"680\" fill=\"light-dark(#000000, #ffffff)\" font-family=\"&quot;Helvetica&quot;\" font-size=\"12px\" text-anchor=\"middle\">10</text></switch></g></g></g><g data-cell-id=\"YD2cjV0bOqWloPQhhFmI-70\"><g><path d=\"M 276 513 L 693.63 513\" fill=\"none\" stroke=\"#000000\" stroke-miterlimit=\"10\" pointer-events=\"stroke\" style=\"stroke: light-dark(rgb(0, 0, 0), rgb(255, 255, 255));\"/><path d=\"M 698.88 513 L 691.88 516.5 L 693.63 513 L 691.88 509.5 Z\" fill=\"#000000\" stroke=\"#000000\" stroke-miterlimit=\"10\" pointer-events=\"all\" style=\"fill: light-dark(rgb(0, 0, 0), rgb(255, 255, 255)); stroke: light-dark(rgb(0, 0, 0), rgb(255, 255, 255));\"/></g></g><g data-cell-id=\"YD2cjV0bOqWloPQhhFmI-71\"><g><rect x=\"300\" y=\"441\" width=\"170\" height=\"80\" fill=\"none\" stroke=\"none\" pointer-events=\"all\"/></g><g><g transform=\"translate(-0.5 -0.5)\"><switch><foreignObject style=\"overflow: visible; text-align: left;\" pointer-events=\"none\" width=\"100%\" height=\"100%\" requiredFeatures=\"http://www.w3.org/TR/SVG11/feature#Extensibility\"><div xmlns=\"http://www.w3.org/1999/xhtml\" style=\"display: flex; align-items: unsafe center; justify-content: unsafe center; width: 1px; height: 1px; padding-top: 481px; margin-left: 385px;\"><div style=\"box-sizing: border-box; font-size: 0; text-align: center; color: #000000; \"><div style=\"display: inline-block; font-size: 12px; font-family: &quot;Helvetica&quot;; color: light-dark(#000000, #ffffff); line-height: 1.2; pointer-events: all; white-space: nowrap; \">Client credentials Grant RQ <div><ul><li style=\"text-align: left;\"><span style=\"background-color: transparent; color: light-dark(rgb(0, 0, 0), rgb(255, 255, 255));\">client_id </span></li><li style=\"text-align: left;\">secret</li></ul></div></div></div></div></foreignObject><text x=\"385\" y=\"485\" fill=\"light-dark(#000000, #ffffff)\" font-family=\"&quot;Helvetica&quot;\" font-size=\"12px\" text-anchor=\"middle\">Client credentials Grant RQ...</text></switch></g></g></g><g data-cell-id=\"YD2cjV0bOqWloPQhhFmI-72\"><g><path d=\"M 700 563 L 282.37 563\" fill=\"none\" stroke=\"#000000\" stroke-miterlimit=\"10\" pointer-events=\"stroke\" style=\"stroke: light-dark(rgb(0, 0, 0), rgb(255, 255, 255));\"/><path d=\"M 277.12 563 L 284.12 559.5 L 282.37 563 L 284.12 566.5 Z\" fill=\"#000000\" stroke=\"#000000\" stroke-miterlimit=\"10\" pointer-events=\"all\" style=\"fill: light-dark(rgb(0, 0, 0), rgb(255, 255, 255)); stroke: light-dark(rgb(0, 0, 0), rgb(255, 255, 255));\"/></g></g><g data-cell-id=\"YD2cjV0bOqWloPQhhFmI-73\"><g><rect x=\"295\" y=\"531\" width=\"200\" height=\"30\" fill=\"none\" stroke=\"none\" pointer-events=\"all\"/></g><g><g transform=\"translate(-0.5 -0.5)\"><switch><foreignObject style=\"overflow: visible; text-align: left;\" pointer-events=\"none\" width=\"100%\" height=\"100%\" requiredFeatures=\"http://www.w3.org/TR/SVG11/feature#Extensibility\"><div xmlns=\"http://www.w3.org/1999/xhtml\" style=\"display: flex; align-items: unsafe center; justify-content: unsafe center; width: 1px; height: 1px; padding-top: 546px; margin-left: 395px;\"><div style=\"box-sizing: border-box; font-size: 0; text-align: center; color: #000000; \"><div style=\"display: inline-block; font-size: 12px; font-family: &quot;Helvetica&quot;; color: light-dark(#000000, #ffffff); line-height: 1.2; pointer-events: all; white-space: nowrap; \">Client credentials Acces token RS</div></div></div></foreignObject><text x=\"395\" y=\"550\" fill=\"light-dark(#000000, #ffffff)\" font-family=\"&quot;Helvetica&quot;\" font-size=\"12px\" text-anchor=\"middle\">Client credentials Acces token RS</text></switch></g></g></g><g data-cell-id=\"YD2cjV0bOqWloPQhhFmI-76\"><g><ellipse cx=\"730\" cy=\"513\" rx=\"15\" ry=\"15\" fill=\"#ffffff\" stroke=\"#000000\" pointer-events=\"all\" style=\"fill: light-dark(#ffffff, var(--ge-dark-color, #121212)); stroke: light-dark(rgb(0, 0, 0), rgb(255, 255, 255));\"/></g><g><g transform=\"translate(-0.5 -0.5)\"><switch><foreignObject style=\"overflow: visible; text-align: left;\" pointer-events=\"none\" width=\"100%\" height=\"100%\" requiredFeatures=\"http://www.w3.org/TR/SVG11/feature#Extensibility\"><div xmlns=\"http://www.w3.org/1999/xhtml\" style=\"display: flex; align-items: unsafe center; justify-content: unsafe center; width: 28px; height: 1px; padding-top: 513px; margin-left: 716px;\"><div style=\"box-sizing: border-box; font-size: 0; text-align: center; color: #000000; \"><div style=\"display: inline-block; font-size: 12px; font-family: &quot;Helvetica&quot;; color: light-dark(#000000, #ffffff); line-height: 1.2; pointer-events: all; white-space: normal; word-wrap: normal; \">9</div></div></div></foreignObject><text x=\"730\" y=\"517\" fill=\"light-dark(#000000, #ffffff)\" font-family=\"&quot;Helvetica&quot;\" font-size=\"12px\" text-anchor=\"middle\">9</text></switch></g></g></g><g data-cell-id=\"YD2cjV0bOqWloPQhhFmI-77\"><g><ellipse cx=\"730\" cy=\"566\" rx=\"15\" ry=\"15\" fill=\"#ffffff\" stroke=\"#000000\" pointer-events=\"all\" style=\"fill: light-dark(#ffffff, var(--ge-dark-color, #121212)); stroke: light-dark(rgb(0, 0, 0), rgb(255, 255, 255));\"/></g><g><g transform=\"translate(-0.5 -0.5)\"><switch><foreignObject style=\"overflow: visible; text-align: left;\" pointer-events=\"none\" width=\"100%\" height=\"100%\" requiredFeatures=\"http://www.w3.org/TR/SVG11/feature#Extensibility\"><div xmlns=\"http://www.w3.org/1999/xhtml\" style=\"display: flex; align-items: unsafe center; justify-content: unsafe center; width: 28px; height: 1px; padding-top: 566px; margin-left: 716px;\"><div style=\"box-sizing: border-box; font-size: 0; text-align: center; color: #000000; \"><div style=\"display: inline-block; font-size: 12px; font-family: &quot;Helvetica&quot;; color: light-dark(#000000, #ffffff); line-height: 1.2; pointer-events: all; white-space: normal; word-wrap: normal; \">10</div></div></div></foreignObject><text x=\"730\" y=\"570\" fill=\"light-dark(#000000, #ffffff)\" font-family=\"&quot;Helvetica&quot;\" font-size=\"12px\" text-anchor=\"middle\">10</text></switch></g></g></g></g></g></g><switch><g requiredFeatures=\"http://www.w3.org/TR/SVG11/feature#Extensibility\"/><a transform=\"translate(0,-5)\" xlink:href=\"https://www.drawio.com/doc/faq/svg-export-text-problems\" target=\"_blank\"><text text-anchor=\"middle\" font-size=\"10px\" x=\"50%\" y=\"100%\">Text is not SVG - cannot display</text></a></switch></svg>\n</div>\n"
+      operationId: Redeem
+      security:
+      - bearerAuth: []
+      parameters:
+      - in: header
+        name: UserToken
+        description: Unique string token used to identify user session in case `client_credential` grant type was used for SSO.
+        required: false
+        schema:
+          type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Redeem'
+            examples:
+              RedeemAirPoints:
+                $ref: '#/components/examples/RedeemAirFullPoints'
+              RedeemAirRoomActivityCarPointsCash:
+                $ref: '#/components/examples/RedeemAirRoomActivityCarPointsAndCash'
+              RedeemActivityCarMixedPointsAndCash:
+                $ref: '#/components/examples/RedeemActivityCarMixedPointsAndCash'
+              RedeemRoomCarNoPoints:
+                $ref: '#/components/examples/RedeemRoomCarNoPoints'
+              RedeemAirRoomInsurancePointsCash:
+                $ref: '#/components/examples/RedeemAirRoomInsurancePointsCash'
+              RedeemActivityCash:
+                $ref: '#/components/examples/RedeemActivityCash'
+      responses:
+        '200':
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RedemptionConfirmation'
+        '400':
+          description: Malformed request
+        '401':
+          description: Not authorized to access the resource
+        '403':
+          description: It is forbidden to access the channel
+        default:
+          description: Unexpected Error
+components:
+  schemas:
+    RedemptionConfirmation:
+      required:
+      - redemptionConfirmationId
+      type: object
+      format: json
+      properties:
+        redemptionConfirmationId:
+          type: string
+          description: Redemption confirmation unique id, will be used on `/refund` API calls for cancellation
+    Redeem:
+      type: object
+      format: json
+      required:
+      - bookingId
+      - createdDate
+      - travelerProfileId
+      - points
+      - customerCurrency
+      - lang
+      - firstName
+      - lastName
+      - country
+      - email
+      - phone
+      - addressLine1
+      - city
+      - postalCode
+      - metadata
+      properties:
+        bookingId:
+          type: string
+          description: Switchfly unique identifier assigned to a specific reservation or booking to track and manage it
+        createdDate:
+          type: string
+          format: yyyy-MM-dd'T'HH:mm:ssX
+          description: Date when the booking reservation was created
+        travelerProfileId:
+          type: string
+          description: Unique Identifier for User Profile
+        points:
+          type: number
+          description: Available points for User Profile. It is acceptable for this field to be 0 if the transaction was fully paid in cash
+        customerCurrency:
+          type: string
+          description: Currency used for the cash display in the customer shopping flow
+        lang:
+          type: number
+          enum:
+          - 1
+          - 2
+          - 3
+          - 4
+          - 5
+          - 6
+          - 7
+          - 8
+          - 9
+          description: "Number value which shares the language used in this booking, related to langId send on Profile Response or matches the default language configured on the system:\n\n     1 - English\n     2 - French\n     3 - Spanish\n     4 - LA_Spanish\n     5 - Chinese_Simplified\n     6 - Japanese\n     7 - BR_Portuguese\n     8 - Thai\n     9 - German\n"
+        firstName:
+          type: string
+          description: First name of the Lead traveler
+        lastName:
+          type: string
+          description: Last name of the Lead traveler
+        country:
+          type: string
+          format: ISO 3166 Alpha 2
+          description: Two digits country code
+        email:
+          type: string
+          description: Last name of the Lead traveler
+        phone:
+          type: string
+          description: phone of the Lead traveler
+        mobilePhone:
+          type: string
+          description: Sent only if present (Optional)
+        addressLine1:
+          type: string
+          description: addressLine1 of the Lead traveler
+        addressLine2:
+          type: string
+          description: Sent only if customer added extra address line
+        city:
+          type: string
+          description: Traveler profile city
+        state:
+          type: string
+          description: State Name
+        postalCode:
+          type: string
+          description: Postal Code
+        emailSubscription:
+          type: boolean
+          description: Indicates if the customer has opted in to receive email communications
+        metadata:
+          type: object
+          required:
+          - payments
+          - products
+          properties:
+            payments:
+              type: array
+              description: Will contain only cash payment information if the booking required a topUp payment
+              required: null
+              items:
+                type: object
+                required:
+                - type
+                - amount
+                - currency
+                - pointsAmount
+                properties:
+                  type:
+                    type: string
+                    description: Type of payment description, if any payment was made with non-points, this will say Credit Card
+                  amount:
+                    type: number
+                    description: Cash amount paid
+                  currency:
+                    type: string
+                    description: Currency in which the CC was charged for the amount (matches customerCurrency)
+                  pointsAmount:
+                    type: number
+                    description: This value corresponds to the amount of missing points the customer covers with this credit card payment on a partial point redemption
+            products:
+              type: array
+              items:
+                type: object
+                description: Will contain all components (segments) that this booking has.Product objects will contain point allocation (points used to cover for the cost), cost of goods and tax details along with product specific details for each type of product
+                required:
+                - id
+                - type
+                - description
+                - pointsAmount
+                - shortfallCash
+                - fullPrice
+                - costOfGoods
+                - tax
+                - attributes
+                properties:
+                  id:
+                    type: string
+                    description: Unique identifier assigned to Product being purchased in Switchfly ecosystem
+                  type:
+                    type: string
+                    enum:
+                    - AIR
+                    - CAR
+                    - ACTIVITY
+                    - ROOM
+                    - INSURANCE
+                    - FEE
+                    description: The product type represented for this product section.  There will be one product node per travel segment within the given booking.
+                  description:
+                    type: string
+                    description: Description of product
+                  pointsAmount:
+                    type: number
+                    description: Points price of component
+                  shortfallCash:
+                    type: number
+                    description: Shows if any cash payment was required for the product e.g if product is paid with points + cash this will describe the cash used
+                  fullPrice:
+                    type: number
+                    description: Total Cash price of component
+                  costOfGoods:
+                    type: number
+                    description: Managed by config
+                  tax:
+                    type: number
+                    description: Total tax collected for this specific product in the booking.
+                  attributes:
+                    description: Attributes vary depending on the type of product, different properties will be send for AIR, ROOM, ACTIVITY, CAR, INSURANCE and FEE
+                    oneOf:
+                    - type: object
+                      title: AirProduct
+                      required:
+                      - recordLocator
+                      - isRoundTrip
+                      - legs
+                      - travelerCounts
+                      description: AIR
+                      properties:
+                        recordLocator:
+                          type: string
+                          description: Flight ticket record locator
+                        isRoundTrip:
+                          type: boolean
+                          description: Describes if the air product is roundtrip, which is true first leg departure airport is equal to last leg arrival airport
+                        travelerCounts:
+                          type: object
+                          required:
+                          - adults
+                          - children
+                          - infantsInSeat
+                          - infantsInLap
+                          properties:
+                            adults:
+                              type: number
+                              description: Number of adult passengers
+                            children:
+                              type: number
+                              description: Number of child passengers
+                            infantsInSeat:
+                              type: number
+                              description: Number of infant in seat passengers
+                            infantsInLap:
+                              type: number
+                              description: Number of infant in lap passengers
+                        legs:
+                          type: array
+                          items:
+                            type: object
+                            required:
+                            - departureAirportCode
+                            - departureDate
+                            - arrivalAirportCode
+                            - arrivalDate
+                            - flightNumbers
+                            - airlineCodes
+                            properties:
+                              departureAirportCode:
+                                type: string
+                                description: Contains the start airport code for the trip
+                              departureDate:
+                                type: string
+                                format: yyyy-MM-dd HH:mm
+                                description: Contains the start date of the trip
+                              arrivalAirportCode:
+                                type: string
+                                description: Contains the arrival airport code of the trip
+                              arrivalDate:
+                                type: string
+                                format: yyyy-MM-dd HH:mm
+                                description: Contains the arrival date of this trip,
+                              flightNumbers:
+                                type: array
+                                description: Contains all the flight numbers of the entire trip
+                                items:
+                                  type: string
+                              airlineCodes:
+                                type: array
+                                description: Contains all the airlines codes involved in the trip
+                                items:
+                                  type: string
+                              layoverAirportCodes:
+                                type: array
+                                description: Contains all the airport codes from stops in this trip
+                                items:
+                                  type: string
+                    - type: object
+                      title: RoomProduct
+                      description: ROOM
+                      required:
+                      - hotelName
+                      - hotelCity
+                      - hotelCountry
+                      - roomDescription
+                      - checkIn
+                      - checkOut
+                      - nights
+                      - roomType
+                      - occupantsCount
+                      properties:
+                        hotelName:
+                          type: string
+                          description: Name of hotel
+                        hotelCity:
+                          type: string
+                          description: City name where the hotel is located
+                        hotelCountry:
+                          type: string
+                          description: Country of hotel location
+                        roomDescription:
+                          type: string
+                          description: Description of room reservation
+                        checkIn:
+                          type: string
+                          format: yyyy-MM-dd HH:mm
+                          description: Hotel reservation check in time
+                        checkOut:
+                          type: string
+                          format: yyyy-MM-dd HH:mm
+                          description: Hotel reservation checkout time
+                        nights:
+                          type: number
+                          description: Number of nights the hotel reservation has
+                        roomType:
+                          type: string
+                          description: Room type description
+                        occupantsCount:
+                          type: string
+                          description: Number of guests in room(s)
+                    - type: object
+                      title: ActivityProduct
+                      required:
+                      - activityName
+                      - activityDescription
+                      - scheduledDate
+                      - airportCode
+                      - tourDuration
+                      description: ACTIVITY
+                      properties:
+                        activityName:
+                          type: string
+                          description: Name of activity
+                        activityDescription:
+                          type: string
+                          description: Description of activity details
+                        scheduledDate:
+                          type: string
+                          format: yyyy-MM-dd HH:mm
+                          description: Activity event start date
+                        airportCode:
+                          type: string
+                          description: Closest Airport code to activity location
+                        tourDuration:
+                          type: string
+                          description: Description of activity duration
+                    - type: object
+                      title: CarProduct
+                      required:
+                      - companyName
+                      - carDescription
+                      - mileage
+                      - pickUpDate
+                      - pickUpLocation
+                      - dropOffDate
+                      - dropOffLocation
+                      description: CAR
+                      properties:
+                        companyName:
+                          type: string
+                          description: Car rental company name
+                        carDescription:
+                          type: string
+                          description: SIPP car description
+                          example: Standard, SUV, Automatic Transmission, Air Conditioning
+                        mileage:
+                          type: string
+                          description: Mileage included on rental
+                        pickUpDate:
+                          type: string
+                          format: yyyy-MM-dd HH:mm
+                          description: Pick up date
+                        pickUpLocation:
+                          type: string
+                          description: Pick up location of car can be airport location or off airport
+                        dropOffDate:
+                          type: string
+                          format: yyyy-MM-dd HH:mm
+                          description: Drop of date
+                        dropOffLocation:
+                          type: string
+                          description: Drop off location of car can be airport location or off airport
+                    - type: object
+                      title: InsuranceProduct
+                      required:
+                      - contractName
+                      - startDate
+                      - endDate
+                      description: INSURANCE
+                      properties:
+                        contractName:
+                          type: string
+                          description: Insurance product name
+                        startDate:
+                          type: string
+                          format: yyyy-MM-dd HH:mm
+                          description: Start date of insurance
+                        endDate:
+                          type: string
+                          format: yyyy-MM-dd HH:mm
+                          description: End date of insurance
+                    - type: object
+                      title: FeeProduct
+                      required:
+                      - contractName
+                      - feeType
+                      description: INSURANCE
+                      properties:
+                        contractName:
+                          type: string
+                          description: Fee product description
+                        feeType:
+                          type: string
+                          description: Specifies the type of fee applied to the transaction or service
+    TravelerProfile:
+      type: object
+      format: json
+      required:
+      - travelerProfileId
+      - balancePoints
+      - customerCurrency
+      - langId
+      - firstName
+      - lastName
+      - email
+      - phone
+      - address
+      - companyCode
+      properties:
+        travelerProfileId:
+          type: string
+          description: Traveler profile unique id
+        balancePoints:
+          type: number
+          description: Available points in customer account used to redeem products
+        customerCurrency:
+          type: string
+          enum:
+          - USD
+          - AED
+          - AUD
+          - BBD
+          - BRL
+          - BSD
+          - CAD
+          - COP
+          - CRC
+          - DOP
+          - EUR
+          - GBP
+          - GTQ
+          - HNL
+          - IDR
+          - ILS
+          - INR
+          - JMD
+          - JOD
+          - JPY
+          - MXN
+          - MYR
+          - NOK
+          - NZD
+          - PAB
+          - PEN
+          - PHP
+          - PLN
+          - SGD
+          - THB
+          - TTD
+          - UYU
+          - VND
+          - XCD
+          - ZAR
+          description: ISO 4217 Customer desired shop currency in case of cash top up.
+        langId:
+          type: number
+          enum:
+          - 1
+          - 2
+          - 3
+          - 4
+          - 5
+          - 6
+          - 7
+          - 8
+          - 9
+          description: "Language id used to specify the preferred language for shopping flow.\n\n     1 - English\n     2 - French\n     3 - Spanish\n     4 - LA_Spanish\n     5 - Chinese_Simplified\n     6 - Japanese\n     7 - BR_Portuguese\n     8 - Thai\n     9 - German\n"
+        title:
+          type: string
+          enum:
+          - Mr
+          - Mrs
+          - Miss
+          - Ms
+          - Dr
+          - Mstr
+          - Rev
+          - Mx
+        firstName:
+          type: string
+          description: Traveler profile first name
+        lastName:
+          type: string
+          description: Traveler profile last name
+        email:
+          type: string
+          description: Traveler profile email address
+        phone:
+          type: string
+          description: Traveler profile preferred phone number
+        address:
+          type: object
+          required:
+          - addressLine1
+          - city
+          - countryCode
+          properties:
+            addressLine1:
+              type: string
+              description: Traveler profile address line 1
+            addressLine2:
+              type: string
+              description: Traveler profile address line 2
+            city:
+              type: string
+              description: Traveler profile city
+            countryCode:
+              type: string
+              example: US
+              description: ISO 3166-1 alpha-2 (2 letter country code)
+            state:
+              type: string
+              example:
+              - CA
+              - Hauts-de-Seine
+              - Catalonia
+              description: ISO 3166-2 state codes or Free text for province/department/prefecture/region
+        companyCode:
+          type: string
+          description: This is a profile parameter that Switchfly uses to customize branding and enable company-specific portal reporting
+  examples:
+    TravelerProfile:
+      value:
+        travelerProfileId: uniqueTravelerId
+        balancePoints: 150000
+        title: Mr
+        firstName: firstName
+        lastName: lastName
+        email: test@switchfly.com
+        phone: '7204909090'
+        customerCurrency: USD
+        langId: 1
+        companyCode: PointBank1234
+        address:
+          addressLine1: 12 Grimmauld Place
+          city: Long Beach
+          countryCode: US
+          state: CA
+          postalCode: '123456'
+    RedeemAirRoomInsurancePointsCash:
+      value:
+        bookingId: '1234567'
+        createdDate: 2023-07-0718:54:00Z
+        travelerProfileId: uniqueId1234
+        points: 62073
+        customerCurrency: USD
+        lang: 1
+        firstName: Checkout
+        lastName: Customer
+        country: US
+        email: checkout@test.com
+        phone: '3033121212'
+        mobilePhone: '7204909090'
+        addressLine1: Test address Line
+        addressLine2: More address details
+        city: Denver
+        state: Colorado
+        postalCode: '80249'
+        metadata:
+          payments:
+          - type: Credit Card
+            amount: 20
+            currency: USD
+            pointsAmount: 2000
+          products:
+          - id: 1
+            type: AIR
+            description: (JFK - CLT - SFO) - (SFO - JFK)
+            pointsAmount: 48300
+            shortfallCash: 0
+            fullPrice: 483
+            costOfGoods: 420
+            tax: 17.7
+            attributes:
+              recordLocator: '12345'
+              isRoundTrip: true
+              travelerCounts:
+                adults: 2
+                children: 1
+                infantsInSeat: 1
+                infantsInLap: 0
+              legs:
+              - departureAirportCode: JFK
+                departureDate: 2023-09-18 05:30
+                arrivalAirportCode: SFO
+                arrivalDate: 2023-09-18 11:45
+                flightNumbers:
+                - '1111'
+                - '4567'
+                airlineCodes:
+                - AA
+                layoverAirportCodes:
+                - CLT
+              - departureAirportCode: SFO
+                departureDate: 2023-09-21 12:30
+                arrivalAirportCode: JFK
+                arrivalDate: 2023-09-21 17:45
+                flightNumbers:
+                - '555'
+                airlineCodes:
+                - AA
+                layoverAirportCodes: []
+          - id: 2
+            type: ROOM
+            description: Doubletree Hotel San Francisco Airport
+            pointsAmount: 12000
+            shortfallCash: 0
+            fullPrice: 120
+            costOfGoods: 104.34
+            tax: 4.39
+            attributes:
+              hotelName: Doubletree Hotel San Francisco Airport
+              hotelCity: BURLINGAME
+              hotelCountry: US
+              roomDescription: Room description
+              checkIn: 2023-09-18 10:30
+              checkOut: 2023-09-21 10:30
+              nights: 2
+              roomType: room_type
+              occupantsCount: 1
+          - id: 3
+            type: INSURANCE
+            description: Cancel for any reason.
+            pointsAmount: 1773
+            fullPrice: 27.73
+            costOfGoods: 27.73
+            tax: 0
+            shortfallCash: 20
+            attributes:
+              contractName: Base Package
+              startDate: 2023-09-18 00:00
+              endDate: 2023-09-21 00:00
+    RedeemActivityCash:
+      value:
+        bookingId: '1234567'
+        points: 0
+        type: travel
+        customerCurrency: USD
+        lang: 1
+        createdDate: 2025-06-26 03:59
+        travelerProfileId: checkout@test.com
+        firstName: Checkout
+        lastName: Customer
+        country: US
+        email: checkout@test.com
+        phone: '3033121212'
+        mobilePhone: '7204909090'
+        addressLine1: Test address Line
+        city: Denver
+        state: Colorado
+        postalCode: '80249'
+        emailSubscription: false
+        metadata:
+          payments:
+          - type: Credit Card
+            amount: 48.65
+            currency: USD
+            pointsAmount: 0
+          products:
+          - id: 1121
+            type: ACTIVITY
+            description: California Sunset Cruise (2-hours)
+            pointsAmount: 0
+            fullPrice: 48.65
+            shortfallCash: 0
+            attributes:
+              activityName: California Sunset Cruise (2-hours)
+              activityDescription: Experience the magic of San Francisco ...
+              scheduledDate: 2025-08-13 19:00
+              airportCode: SFO
+              tourDuration: 2 hours
+              description: 'Experience the magic of San Francisco ... '
+    RedeemRoomCarNoPoints:
+      value:
+        bookingId: '1234567'
+        createdDate: 2023-07-0718:54:00Z
+        travelerProfileId: uniqueId1234
+        points: 0
+        customerCurrency: USD
+        lang: 1
+        firstName: Checkout
+        lastName: Customer
+        country: US
+        email: checkout@test.com
+        phone: '3033121212'
+        mobilePhone: '7204909090'
+        addressLine1: Test address Line
+        addressLine2: More address details
+        city: Denver
+        state: Colorado
+        postalCode: '80249'
+        emailSubscription: true
+        metadata:
+          payments:
+          - type: Credit Card
+            amount: 152.96
+            currency: USD
+            pointsAmount: 0
+          products:
+          - id: 43
+            type: ROOM
+            description: Holiday Inn Miami West - Airport Area, an IHG Hotel
+            pointsAmount: 0
+            fullPrice: 119.52
+            costOfGoods: 98.06
+            tax: 12.24
+            shortfallCash: 0
+            attributes:
+              hotelName: Holiday Inn Miami West - Airport Area, an IHG Hotel
+              hotelCity: Hialeah
+              hotelCountry: US
+              roomDescription: 'Bedding requests cannot be guaranteed. Please contact the property to confirm.
+
+                <p><strong>1 King Bed and 1 Double Sofa Bed</strong></p><p>190-sq-foot room with city views </p><br/><p><b>Layout</b> - Separate sitting area</p><p><b>Internet</b> - Free WiFi </p><p><b>Entertainment</b> - Premium channels </p><p><b>Food & Drink</b> - Refrigerator, coffee/tea maker,  room service (limited hours), and microwave (on request)</p><p><b>Sleep</b> - A pillow menu, blackout drapes/curtains, and bed sheets </p><p><b>Bathroom</b> - Private bathroom, shower/tub combination, bathrobes, and free toiletries</p><p><b>Practical</b> - Sofa bed, free local calls, and laptop-compatible safe</p><p><b>Comfort</b> - Fresh bed sheets (on request), fresh towels (on request), and climate-controlled air conditioning</p><p><b>Accessibility</b> - Thin carpet in room</p><p><b>Eco-friendly</b> - Eco-friendly toiletries, eco-friendly cleaning supplies, energy-saving switches, and recycling bin</p><p><b>Need to Know</b> - Weekly housekeeping</p><p>Non-Smoking</p><p>Room/bed type depends on availability at check-in </p>'
+              checkIn: 2024-07-03 16:00
+              checkOut: 2024-07-04 11:00
+              nights: 1
+              roomType: Standard Room, 1 King Bed with Sofa bed - 1 King Bed, 1 Sofa Bed
+              occupantsCount: 1
+          - id: 29
+            type: CAR
+            description: Nissan Versa or similar
+            pointsAmount: 0
+            fullPrice: 33.44
+            costOfGoods: 27.87
+            tax: 0
+            shortfallCash: 0
+            attributes:
+              companyName: MEX
+              carDescription: Compact, 2/4 door, Automatic Transmission, Air Conditioning
+              mileage: Unlimited
+              pickUpDate: 2024-07-03 11:00
+              pickupLocation: MIA Airport
+              dropOffDate: 2024-07-04 11:00
+              dropOffLocation: MIA Airport
+    RedeemAirRoomActivityCarPointsAndCash:
+      value:
+        bookingId: '1234567'
+        createdDate: 2023-07-0718:54:00Z
+        travelerProfileId: uniqueId1234
+        points: 68450
+        customerCurrency: USD
+        lang: 1
+        firstName: Checkout
+        lastName: Customer
+        country: US
+        email: checkout@test.com
+        phone: '3033121212'
+        mobilePhone: '7204909090'
+        addressLine1: Test address Line
+        addressLine2: More address details
+        city: Denver
+        state: Colorado
+        postalCode: '80249'
+        emailSubscription: false
+        metadata:
+          payments:
+          - type: Credit Card
+            amount: 100
+            currency: USD
+            pointsAmount: 10000
+          products:
+          - id: 1
+            type: AIR
+            description: (JFK - CLT - SFO) - (SFO - JFK)
+            pointsAmount: 48300
+            shortfallCash: 0
+            fullPrice: 483
+            costOfGoods: 420
+            tax: 17.7
+            attributes:
+              recordLocator: '12345'
+              isRoundTrip: true
+              travelerCounts:
+                adults: 2
+                children: 1
+                infantsInSeat: 1
+                infantsInLap: 0
+              legs:
+              - departureAirportCode: JFK
+                departureDate: 2023-09-18 05:30
+                arrivalAirportCode: SFO
+                arrivalDate: 2023-09-18 11:45
+                flightNumbers:
+                - '1111'
+                - '4567'
+                airlineCodes:
+                - AA
+                layoverAirportCodes:
+                - CLT
+              - departureAirportCode: SFO
+                departureDate: 2023-09-21 12:30
+                arrivalAirportCode: JFK
+                arrivalDate: 2023-09-21 17:45
+                flightNumbers:
+                - '555'
+                airlineCodes:
+                - AA
+                layoverAirportCodes: []
+          - id: 2
+            type: ROOM
+            description: Doubletree Hotel San Francisco Airport
+            pointsAmount: 12000
+            shortfallCash: 0
+            fullPrice: 120
+            costOfGoods: 104.34
+            tax: 4.39
+            attributes:
+              hotelName: Doubletree Hotel San Francisco Airport
+              hotelCity: BURLINGAME
+              hotelCountry: US
+              roomDescription: Room description
+              checkIn: 2023-09-18 10:30
+              checkOut: 2023-09-21 10:30
+              nights: 2
+              roomType: room_type
+              occupantsCount: 1
+          - id: 3
+            type: ACTIVITY
+            description: Swim with dolphins
+            pointsAmount: 8150
+            shortfallCash: 0
+            fullPrice: 81.5
+            costOfGoods: 70.86
+            tax: 2.98
+            attributes:
+              activityName: Swim with dolphins
+              activityDescription: Short description
+              scheduledDate: 2023-09-19 10:00
+              airportCode: SFO
+              tourDuration: tour_duration
+              description: Short description
+          - id: 4
+            type: CAR
+            description: Toyota Trueno
+            pointsAmount: 0
+            shortfallCash: 100
+            fullPrice: 100
+            tax: 3.58
+            attributes:
+              companyName: Enterprise
+              carDescription: Sipp Description
+              mileage: Unlimited
+              pickUpDate: 2023-09-18 16:00
+              pickupLocation: SFO Airport
+              dropOffDate: 2023-09-21 10:00
+              dropOffLocation: SFO Airport
+    RedeemActivityCarMixedPointsAndCash:
+      value:
+        bookingId: '1234567'
+        createdDate: 2023-07-0718:54:00Z
+        travelerProfileId: uniqueId1234
+        points: 10150
+        customerCurrency: USD
+        lang: 1
+        firstName: Checkout
+        lastName: Customer
+        country: US
+        email: checkout@test.com
+        phone: '3033121212'
+        mobilePhone: '7204909090'
+        addressLine1: Test address Line
+        addressLine2: More address details
+        city: Denver
+        state: Colorado
+        postalCode: '80249'
+        emailSubscription: true
+        metadata:
+          payments:
+          - type: Credit Card
+            amount: 80
+            currency: USD
+            pointsAmount: 8000
+          products:
+          - id: 11
+            type: ACTIVITY
+            description: Swim with dolphins
+            pointsAmount: 8150
+            shortfallCash: 0
+            fullPrice: 81.5
+            costOfGoods: 70.86
+            tax: 2.98
+            attributes:
+              activityName: Swim with dolphins
+              activityDescription: Short description
+              scheduledDate: 2023-09-19 10:00
+              airportCode: SFO
+              tourDuration: tour_duration
+              description: Short description
+          - id: 11
+            type: CAR
+            description: Toyota Trueno
+            pointsAmount: 2000
+            shortfallCash: 80
+            fullPrice: 100
+            tax: 3.58
+            attributes:
+              companyName: Enterprise
+              carDescription: Sipp Description
+              mileage: Unlimited
+              pickUpDate: 2023-09-18 16:00
+              pickupLocation: SFO Airport
+              dropOffDate: 2023-09-21 10:00
+              dropOffLocation: SFO Airport
+    RedeemAirFullPoints:
+      value:
+        bookingId: '1234567'
+        createdDate: 2023-07-0718:54:00Z
+        travelerProfileId: uniqueId1234
+        points: 48300
+        customerCurrency: USD
+        lang: 1
+        firstName: Checkout
+        lastName: Customer
+        country: US
+        email: checkout@test.com
+        phone: '3033121212'
+        mobilePhone: '7204909090'
+        addressLine1: Test address Line
+        addressLine2: More address details
+        city: Denver
+        state: Colorado
+        postalCode: '80249'
+        emailSubscription: true
+        metadata:
+          payments: []
+          products:
+          - id: 1
+            type: AIR
+            description: (JFK - CLT - SFO) - (SFO - JFK)
+            pointsAmount: 48300
+            shortfallCash: 0
+            fullPrice: 483
+            costOfGoods: 420
+            tax: 17.7
+            attributes:
+              recordLocator: '12345'
+              isRoundTrip: true
+              travelerCounts:
+                adults: 2
+                children: 1
+                infantsInSeat: 1
+                infantsInLap: 0
+              legs:
+              - departureAirportCode: JFK
+                departureDate: 2023-09-18 05:30
+                arrivalAirportCode: SFO
+                arrivalDate: 2023-09-18 11:45
+                flightNumbers:
+                - '1111'
+                - '4567'
+                airlineCodes:
+                - AA
+                layoverAirportCodes:
+                - CLT
+              - departureAirportCode: SFO
+                departureDate: 2023-09-21 12:30
+                arrivalAirportCode: JFK
+                arrivalDate: 2023-09-21 17:45
+                flightNumbers:
+                - '555'
+                airlineCodes:
+                - AA
+                layoverAirportCodes: []
+          - id: 2
+            type: FEE
+            description: Standalone Air Booking Fee
+            pointsAmount: 2000
+            shortfallCash: 0
+            fullPrice: 20
+            costOfGoods: 0
+            tax: 0
+            attributes:
+              contractName: Standalone Air Booking Fee
+              feeType: BOOKING
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      description: Uses token retrieved from OAuth 2 SSO token requests
+    adminBearerAuth:
+      type: http
+      scheme: bearer
+      description: Uses token retrieved from Machine to Machine OAuth 2 client credentials token request.
