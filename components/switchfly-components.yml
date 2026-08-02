@@ -1,0 +1,45 @@
+generated: '2026-07-21'
+method: searched
+source: https://www.switchfly.com/dev/api-documentation/widgets
+notes: >-
+  Switchfly publishes a family of embeddable, client-side travel UI widgets for
+  partner booking platforms. Loading methods: iframe embed (CDN-served standalone
+  pages configured via URL params), script embed (IIFE bundles with programmatic
+  init via SwitchflyWidgets.createSearchWidget(...)), and an ES-module JS SDK for
+  custom UI. Loader bundles are cataloged in packages/switchfly-packages.yml.
+loaders:
+- switchfly-widgets.iife.js
+- switchfly-widgets-search.iife.js
+families:
+- name: Travel Search
+  components:
+  - name: Search Widget
+    description: >-
+      Full-featured travel search across air, hotel, car, activities, and bundles.
+- name: Merchandising
+  components:
+  - name: Hotel Deals Widget
+    description: Showcases featured hotel properties with click-through to booking.
+- name: Identity
+  components:
+  - name: Identity Widget
+    description: Headless utility that resolves a stable user profile ID.
+- name: Cart
+  components:
+  - name: User Carts Widget
+    description: Displays in-progress and saved shopping carts as scrollable cards.
+configuration:
+  required:
+  - targetUrl
+  optional:
+  - locale
+  - cobrand
+  - availableProducts
+  - branding tokens (colors/styling)
+  locales:
+  - en
+  - fr
+  - es
+  - ja
+  - zh
+  - th

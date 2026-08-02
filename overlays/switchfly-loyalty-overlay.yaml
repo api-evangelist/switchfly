@@ -1,0 +1,38 @@
+overlay: 1.0.0
+info:
+  title: API Evangelist enrichment overlay for the Switchfly Loyalty API
+  version: 1.0.0
+x-meta:
+  generated: '2026-07-21'
+  method: generated
+  source: openapi/switchfly-loyalty-openapi.json
+  extends: openapi/switchfly-loyalty-openapi.json
+actions:
+- target: $.info
+  description: Record the production/documentation host and API Evangelist provenance.
+  update:
+    x-api-evangelist:
+      provider: switchfly
+      documentation: https://www.switchfly.com/dev/api-documentation/loyalty
+      host_pattern: https://{domain}.switchfly.com
+      enriched: '2026-07-21'
+- target: $
+  description: Add a servers[] entry (the source spec omits servers).
+  update:
+    servers:
+    - url: https://{domain}.switchfly.com
+      description: Per-partner white-label host (templated).
+      variables:
+        domain:
+          default: www
+          description: Partner-specific subdomain assigned by Switchfly.
+- target: $.paths['/redeem'].post
+  description: Flag Redeem as a balance-mutating operation for agent safety.
+  update:
+    x-mutating: true
+    x-confirm-required: true
+- target: $.paths['/refund'].post
+  description: Flag Refund as a balance-mutating operation for agent safety.
+  update:
+    x-mutating: true
+    x-confirm-required: true

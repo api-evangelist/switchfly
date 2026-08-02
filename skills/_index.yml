@@ -1,0 +1,19 @@
+generated: '2026-07-21'
+method: generated
+source: openapi/switchfly-loyalty-openapi.json
+api: Switchfly Loyalty API
+notes: >-
+  Agent Skills generated from real Switchfly Loyalty API operationIds. No
+  provider-published skills/AGENTS.md was found.
+skills:
+- name: switchfly-redeem-points
+  file: switchfly-redeem-points.md
+  operations:
+  - TokenRequest
+  - TravelerProfile
+  - Redeem
+- name: switchfly-refund-booking
+  file: switchfly-refund-booking.md
+  operations:
+  - ClientCredentialAdminToken
+  - Refund

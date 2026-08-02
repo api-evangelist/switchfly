@@ -1,0 +1,39 @@
+generated: '2026-07-21'
+method: derived
+status: candidate
+source: openapi/switchfly-loyalty-openapi.json
+notes: >-
+  No official hosted or remote MCP server was found for Switchfly. This is a
+  DERIVED candidate tool list mapped 1:1 from the Switchfly Loyalty API (v3.4)
+  operations, offered as a starting point for an MCP wrapper. Tools that mutate
+  loyalty balances (redeem/refund) should require explicit confirmation.
+server:
+  name: switchfly-loyalty
+  transport: candidate
+  auth: oauth2-bearer
+tools:
+- name: request_token
+  operationId: TokenRequest
+  method: POST
+  path: /token
+  description: Obtain an OAuth 2 SSO access/refresh token (authorization_code or client_credentials).
+- name: get_traveler_profile
+  operationId: TravelerProfile
+  method: GET
+  path: /traveler-profile
+  description: Retrieve a loyalty traveler's profile information.
+- name: redeem_points
+  operationId: Redeem
+  method: POST
+  path: /redeem
+  description: Redeem points from a traveler's loyalty points account. Mutating - confirm first.
+- name: request_admin_token
+  operationId: ClientCredentialAdminToken
+  method: POST
+  path: /admin/token
+  description: Obtain a machine-to-machine admin token via client_credentials.
+- name: refund
+  operationId: Refund
+  method: POST
+  path: /refund
+  description: Cancel a booking or individual components of a booking. Mutating - confirm first.

@@ -1,0 +1,34 @@
+generated: '2026-07-21'
+method: searched
+source: https://www.switchfly.com/dev/api-documentation/widgets
+notes: >-
+  Switchfly ships first-party client JavaScript for its embeddable travel widgets.
+  These are distributed as CDN-hosted bundles / an ES-module SDK rather than
+  published to a public registry (npm/PyPI/etc.); no public registry package was
+  found. official:true because they are first-party artifacts documented by
+  Switchfly. The embeddable UI surfaces themselves are cataloged in
+  components/switchfly-components.yml.
+packages:
+- name: switchfly-widgets.iife.js
+  language: javascript
+  distribution: cdn-iife-bundle
+  official: true
+  description: >-
+    Browser IIFE bundle exposing all Switchfly widgets via the global
+    SwitchflyWidgets (e.g. SwitchflyWidgets.createSearchWidget(...)).
+  source: https://www.switchfly.com/dev/api-documentation/widgets
+- name: switchfly-widgets-search.iife.js
+  language: javascript
+  distribution: cdn-iife-bundle
+  official: true
+  description: Browser IIFE bundle for the search widget only.
+  source: https://www.switchfly.com/dev/api-documentation/widgets
+- name: Switchfly Widgets JavaScript SDK
+  language: javascript
+  distribution: es-module (CDN)
+  official: true
+  description: >-
+    ES-module SDK (createClient) providing location autocomplete and URL-building
+    APIs for building custom travel-search UI. Imported from the partner CDN
+    packages/sdk path.
+  source: https://www.switchfly.com/dev/api-documentation/widgets

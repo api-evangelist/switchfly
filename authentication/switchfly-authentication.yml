@@ -1,0 +1,46 @@
+generated: '2026-07-21'
+method: searched
+source: https://www.switchfly.com/dev/api-documentation/loyalty
+summary:
+  types:
+  - http
+  - oauth2
+  overview: >-
+    The Switchfly Loyalty API authenticates via OAuth 2 SSO. Two HTTP bearer
+    schemes are declared in the OpenAPI: bearerAuth (traveler/SSO tokens) and
+    adminBearerAuth (machine-to-machine client-credentials tokens). Supported
+    grant types are authorization_code (with PKCE) and client_credentials.
+schemes:
+- name: bearerAuth
+  type: http
+  scheme: bearer
+  description: >-
+    Bearer token retrieved from OAuth 2 SSO token requests (POST /token). Used
+    for traveler-facing loyalty actions such as fetching a profile and redeeming
+    points.
+  in: header
+  header: Authorization
+  sources:
+  - openapi/switchfly-loyalty-openapi.json
+- name: adminBearerAuth
+  type: http
+  scheme: bearer
+  description: >-
+    Bearer token retrieved from a Machine-to-Machine OAuth 2 client_credentials
+    token request (POST /admin/token). Used for administrative/M2M operations
+    such as refunds.
+  in: header
+  header: Authorization
+  sources:
+  - openapi/switchfly-loyalty-openapi.json
+oauth2:
+  grant_types:
+  - authorization_code
+  - client_credentials
+  pkce: true
+  token_endpoint: POST /token
+  admin_token_endpoint: POST /admin/token
+  notes: >-
+    Clients with an existing internal SSO token can consolidate authorization via
+    the client_credentials flow using client_id and client_secret. Per-partner
+    token endpoints are served from a templated {domain}.switchfly.com host.

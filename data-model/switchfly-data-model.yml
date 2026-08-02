@@ -1,0 +1,38 @@
+generated: '2026-07-21'
+method: derived
+source: openapi/switchfly-loyalty-openapi.json
+notes: >-
+  Entity graph derived from the Switchfly Loyalty API schemas. The API is
+  action-oriented (token/profile/redeem/refund) rather than a large resource
+  graph, so relationships are inferred from the request/response shapes.
+entities:
+- name: TravelerProfile
+  description: A loyalty program member's profile, retrieved via GET /traveler-profile.
+  source_schema: TravelerProfile
+- name: Redeem
+  description: A points-redemption action against a traveler's points account (POST /redeem).
+  source_schema: Redeem
+- name: RedemptionConfirmation
+  description: The confirmation returned for a successful redemption.
+  source_schema: RedemptionConfirmation
+- name: Refund
+  description: A cancellation/refund of a booking or its components (POST /refund).
+  source_schema: Refund
+- name: Token
+  description: >-
+    OAuth 2 token responses (AuthorizationCode, ClientCredentials, RefreshToken,
+    Admin client-credentials) used to authorize traveler and admin actions.
+  source_schema: AuthorizationCodeTokenResponse
+relationships:
+- from: Redeem
+  type: belongs_to
+  to: TravelerProfile
+  via: traveler points account
+- from: RedemptionConfirmation
+  type: belongs_to
+  to: Redeem
+  via: redemption result
+- from: Refund
+  type: belongs_to
+  to: RedemptionConfirmation
+  via: cancels a prior booking/redemption

@@ -1,0 +1,39 @@
+generated: '2026-07-21'
+method: derived
+source: openapi/switchfly-loyalty-openapi.json + https://www.switchfly.com/dev/api-documentation/loyalty
+auth:
+  style: oauth2-bearer
+  detail: >-
+    OAuth 2 bearer tokens in the Authorization header. Traveler/SSO tokens from
+    POST /token; machine-to-machine admin tokens from POST /admin/token. See
+    authentication/switchfly-authentication.yml.
+idempotency:
+  supported: false
+  notes: >-
+    No idempotency key header is documented for the mutating operations
+    (POST /redeem, POST /refund). Refund is modeled as an explicit cancel action
+    rather than an idempotent retry.
+pagination:
+  supported: false
+  notes: No collection/list endpoints are exposed; all five operations are single actions.
+error_envelope:
+  style: http-status
+  detail: >-
+    4xx/5xx are signaled by HTTP status (400 malformed, 401 unauthorized,
+    403 forbidden channel, default unexpected). No application/problem+json body.
+    See errors/switchfly-problem-types.yml.
+versioning:
+  detail: Major version carried in the API title (v3.4). See lifecycle/switchfly-lifecycle.yml.
+localization:
+  currencies: 35+ (USD, EUR, GBP, JPY, and others)
+  languages:
+  - en
+  - es
+  - fr
+  - ja
+  - zh
+  - th
+  notes: Documented for the Loyalty API and travel-search widgets.
+rate_limiting:
+  documented: false
+  notes: No public rate-limit headers or quotas were found in the documentation.

@@ -1,0 +1,42 @@
+generated: '2026-07-21'
+method: derived
+source: openapi/switchfly-loyalty-openapi.json
+format: http-status
+notes: >-
+  Derived from the 4xx/5xx responses declared on the Redeem and Refund operations
+  of the Switchfly Loyalty API. Error responses carry no schema/content in the
+  spec (no application/problem+json), so these are HTTP-status-level problem types
+  rather than RFC 9457 problem documents.
+problem_types:
+- status: 400
+  title: Malformed request
+  operations:
+  - Redeem
+  - Refund
+  remediation: >-
+    Validate the request body against the operation schema (Redeem / Refund) and
+    ensure required fields and content-type (application/json) are present.
+- status: 401
+  title: Not authorized to access the resource
+  operations:
+  - Redeem
+  - Refund
+  remediation: >-
+    Provide a valid OAuth 2 bearer token. Re-run the SSO token request
+    (POST /token) or admin client-credentials request (POST /admin/token).
+- status: 403
+  title: It is forbidden to access the channel
+  operations:
+  - Redeem
+  - Refund
+  remediation: >-
+    The authenticated client is not permitted for the requested channel/cobrand.
+    Confirm the channel entitlement with Switchfly for the partner instance.
+- status: default
+  title: Unexpected Error
+  operations:
+  - Redeem
+  - Refund
+  remediation: >-
+    Treat as a 5xx server-side error; retry idempotently where safe and contact
+    Switchfly support if it persists.

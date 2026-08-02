@@ -1,0 +1,23 @@
+generated: '2026-07-21'
+method: probed
+source: live HTTP probes of switchfly.com hosts
+host: https://www.switchfly.com
+probes:
+- path: /.well-known/security.txt
+  status: 404
+  file: null
+- path: /.well-known/openid-configuration
+  status: 404
+  file: null
+- path: /.well-known/oauth-authorization-server
+  status: 404
+  file: null
+- path: /.well-known/api-catalog
+  status: 404
+  file: null
+- path: /.well-known/ai-plugin.json
+  status: 404
+  file: null
+notes: >-
+  No .well-known endpoints are published. A root /llms.txt IS served (HTTP 200)
+  and is captured verbatim at llms/switchfly-llms.txt.

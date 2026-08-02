@@ -1,0 +1,31 @@
+generated: '2026-07-21'
+method: derived
+source: openapi/switchfly-loyalty-openapi.json + https://www.switchfly.com/dev/api-documentation/loyalty
+standards:
+- id: oauth2
+  conforms: true
+  evidence: >-
+    OpenAPI declares OAuth 2 bearer authentication; docs document authorization_code
+    (with PKCE) and client_credentials grant types with /token and /admin/token
+    endpoints.
+- id: pkce
+  conforms: true
+  evidence: >-
+    Documentation states authorization_code grant is used with PKCE.
+- id: rfc9457
+  conforms: false
+  evidence: >-
+    Error responses (400/401/403/default) declare no application/problem+json body;
+    problem types are HTTP-status level only.
+- id: idempotency
+  conforms: false
+  evidence: >-
+    No idempotency key header is documented for POST /redeem or POST /refund.
+- id: pagination
+  conforms: false
+  evidence: >-
+    No list/collection endpoints; the five operations are single-resource actions,
+    so pagination does not apply.
+- id: json:api
+  conforms: false
+  evidence: Responses use plain application/json schemas, not the JSON:API media type.

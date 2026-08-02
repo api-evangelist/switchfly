@@ -1,0 +1,18 @@
+{
+  "provider": "switchfly",
+  "sources": [
+    "switchfly-machine-to-machine-oauth2-refund-api-openapi.yml",
+    "switchfly-oauth-2-sso-authorize-api-openapi.yml",
+    "switchfly-shopping-flow-api-openapi.yml"
+  ],
+  "outputs": [
+    "switchfly-machine-to-machine-oauth2-refund-api-openapi.yml",
+    "switchfly-oauth-2-sso-authorize-api-openapi.yml",
+    "switchfly-shopping-flow-api-openapi.yml"
+  ],
+  "archived": [],
+  "errors": [],
+  "warnings": [],
+  "notes": [],
+  "skipped": []
+}

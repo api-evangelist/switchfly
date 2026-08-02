@@ -1,0 +1,24 @@
+generated: '2026-07-21'
+method: derived
+source: openapi/switchfly-loyalty-openapi.json + https://www.switchfly.com/dev/api-documentation/loyalty
+versioning:
+  scheme: major-version-in-title
+  current_version: v3.4
+  evidence: >-
+    OpenAPI info.title is "Switchfly Loyalty API", info.version "v3.4". No path- or
+    header-based version negotiation is documented.
+deprecation:
+  policy_documented: false
+  sunset_header: false
+  deprecated_operations: []
+  notes: >-
+    No public deprecation or Sunset/Deprecation (RFC 8594) header policy was found;
+    no OpenAPI operations are flagged deprecated.
+status_page:
+  found: false
+  notes: No public status page was discovered for the Switchfly Loyalty API.
+sla:
+  found: false
+  notes: >-
+    Switchfly markets 24/7 traveler support but publishes no machine-readable SLA
+    for the API.
