@@ -116,6 +116,10 @@ apis:
   - type: DataModel
     url: data-model/switchfly-data-model.yml
 common:
+- type: MCPServer
+  url: mcp/switchfly-mcp.yml
+- type: Overlay
+  url: overlays/switchfly-loyalty-overlay.yaml
 - type: DomainSecurity
   url: security/switchfly-domain-security.yml
 - type: DeveloperPortal
