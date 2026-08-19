@@ -1,0 +1,33 @@
+{
+  "opencollection": "1.0.0",
+  "info": {
+    "name": "Switchfly Loyalty Machine to Machine (OAuth2 & Refund) Machine to Machine (OAuth2 & Refund) OAuth 2 - SSO Authorize API",
+    "version": "v3.4"
+  },
+  "items": [
+    {
+      "info": {
+        "name": "OAuth 2 - SSO Authorize",
+        "type": "folder"
+      },
+      "items": [
+        {
+          "info": {
+            "name": "Endpoint for authentication",
+            "type": "http"
+          },
+          "http": {
+            "method": "POST",
+            "url": "{{baseUrl}}/token",
+            "body": {
+              "type": "form-urlencoded",
+              "data": []
+            }
+          },
+          "docs": "This is the token endpoint that will be used either to retrieve a token exchanging the authorization `code` when `grant_type=authorization_code` is used for the SSO.\n\nOr retrieving a token using only the `client_id` and `client_secret` credentials provided by the 3rd party to Switchfly.\n\n<h4>Authorization Code</h4>\n\nWhen using the `grant_type=authorization_code` this endpoint need to return a response with both an `access_token` and `refresh_token`. \n\nThe `refresh_token` will be used to perform "
+        }
+      ]
+    }
+  ],
+  "bundled": true
+}

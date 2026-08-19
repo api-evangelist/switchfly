@@ -1,0 +1,52 @@
+{
+  "opencollection": "1.0.0",
+  "info": {
+    "name": "Switchfly Loyalty Machine to Machine (OAuth2 & Refund) Machine to Machine (OAuth2 & Refund) Machine to Machine (OAuth2 & Refund) API",
+    "version": "v3.4"
+  },
+  "items": [
+    {
+      "info": {
+        "name": "Machine to Machine (OAuth2 & Refund)",
+        "type": "folder"
+      },
+      "items": [
+        {
+          "info": {
+            "name": "Authentication Switchfly App against 3rd party API",
+            "type": "http"
+          },
+          "http": {
+            "method": "POST",
+            "url": "{{baseUrl}}/admin/token",
+            "body": {
+              "type": "form-urlencoded",
+              "data": []
+            }
+          },
+          "docs": "This endpoint will be used to perform a OAuth 2 - client credentials token\nrequest.\n\nThe path in this endpoint can be the same as the `/token` path the only requirement is that a different set of \n`client_id` and `client_secret` credentials are shared by the 3rd party to Switchfly as this token request will\nbe triggered to perform a **machine to machine** authentication which will then allow Switchfly to perform API\nrequests to a secured `/refund` endpoint.\n\nThe generated token will be used by t"
+        },
+        {
+          "info": {
+            "name": "Cancel booking or individual components of a booking",
+            "type": "http"
+          },
+          "http": {
+            "method": "POST",
+            "url": "{{baseUrl}}/refund",
+            "body": {
+              "type": "json",
+              "data": "{}"
+            },
+            "auth": {
+              "type": "bearer",
+              "token": "{{bearerToken}}"
+            }
+          },
+          "docs": "This API will be used by Switchfly to perform points refund actions to a redemption booking from a loyalty customer.\n\nSwitchfly will include the `redemptionConfirmationId` in the body of the request, this will help the 3rd party API to identify which redemption booking is being refunded, it will also include the amount of points and cash refunded (susceptible to)\n\nRefund could be of types `BOOKING` and `COMPONENT` which will describe if all the booking is being cancelled or if only an individual"
+        }
+      ]
+    }
+  ],
+  "bundled": true
+}

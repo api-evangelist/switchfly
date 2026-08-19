@@ -1,0 +1,64 @@
+{
+  "opencollection": "1.0.0",
+  "info": {
+    "name": "Switchfly Loyalty Machine to Machine (OAuth2 & Refund) Machine to Machine (OAuth2 & Refund) Shopping Flow API",
+    "version": "v3.4"
+  },
+  "items": [
+    {
+      "info": {
+        "name": "Shopping Flow",
+        "type": "folder"
+      },
+      "items": [
+        {
+          "info": {
+            "name": "Retrieve Traveler Profile information",
+            "type": "http"
+          },
+          "http": {
+            "method": "GET",
+            "url": "{{baseUrl}}/traveler-profile",
+            "headers": [
+              {
+                "name": "UserToken",
+                "value": ""
+              }
+            ],
+            "auth": {
+              "type": "bearer",
+              "token": "{{bearerToken}}"
+            }
+          },
+          "docs": "Request performed to 3rd party endpoint to fetch Traveler Profile information such as `travelerProfileId`, `firstName`, `balancePoints`, `customerCurrency`\n- Supported Currencies:\n  - USD\n  - AED\n  - AUD\n  - BBD\n  - BRL\n  - BSD\n  - CAD\n  - COP\n  - CRC\n  - DOP\n  - EUR\n  - GBP\n  - GTQ\n  - HNL\n  - IDR\n  - ILS\n  - INR\n  - JMD\n  - JOD\n  - JPY\n  - MXN\n  - MYR\n  - NOK\n  - NZD\n  - PAB\n  - PEN\n  - PHP\n  - PLN\n  - SGD\n  - THB\n  - TTD\n  - UYU\n  - VND\n  - XCD\n  - ZAR\n\n- Supported Languages:\n  - English\n  - "
+        },
+        {
+          "info": {
+            "name": "Redeem points from Traveler Points account",
+            "type": "http"
+          },
+          "http": {
+            "method": "POST",
+            "url": "{{baseUrl}}/redeem",
+            "headers": [
+              {
+                "name": "UserToken",
+                "value": ""
+              }
+            ],
+            "body": {
+              "type": "json",
+              "data": "{}"
+            },
+            "auth": {
+              "type": "bearer",
+              "token": "{{bearerToken}}"
+            }
+          },
+          "docs": "This API will allow Switchfly the capability of redeeming points from a customer loyalty profile account.\n\nSwitchfly will send a request to this API endpoint using a JSON payload which will describe the products the customer (booking components) is redeeming points on.\n\nThis will include the points and cash used for each component and will also include information whether or not a credit card payment top up was needed to complete the booking.\n\nThe only requirement for this endpoint is to return "
+        }
+      ]
+    }
+  ],
+  "bundled": true
+}

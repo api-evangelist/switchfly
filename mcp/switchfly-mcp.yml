@@ -2,11 +2,9 @@ generated: '2026-07-21'
 method: derived
 status: candidate
 source: openapi/switchfly-loyalty-openapi.json
-notes: >-
-  No official hosted or remote MCP server was found for Switchfly. This is a
-  DERIVED candidate tool list mapped 1:1 from the Switchfly Loyalty API (v3.4)
-  operations, offered as a starting point for an MCP wrapper. Tools that mutate
-  loyalty balances (redeem/refund) should require explicit confirmation.
+notes: No official hosted or remote MCP server was found for Switchfly. This is a DERIVED candidate tool
+  list mapped 1:1 from the Switchfly Loyalty API (v3.4) operations, offered as a starting point for an
+  MCP wrapper. Tools that mutate loyalty balances (redeem/refund) should require explicit confirmation.
 server:
   name: switchfly-loyalty
   transport: candidate
@@ -37,3 +35,9 @@ tools:
   method: POST
   path: /refund
   description: Cancel a booking or individual components of a booking. Mutating - confirm first.
+deployment:
+  mode: none
+  verified: derived
+  tools: 5
+  checked: '2026-08-12'
+  source: catalog MCP census
