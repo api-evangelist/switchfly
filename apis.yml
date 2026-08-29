@@ -128,6 +128,9 @@ apis:
   - type: DataModel
     url: data-model/switchfly-data-model.yml
 common:
+- type: CapabilityMap
+  url: capabilities/switchfly-capability-edges.yml
+  name: Switchfly Business Capability Map
 - type: MCPServer
   url: mcp/switchfly-mcp.yml
 - type: Overlay

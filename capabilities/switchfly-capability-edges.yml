@@ -1,0 +1,36 @@
+slug: switchfly
+provider: Switchfly
+generated_by: planning/capability-mapping/scripts/classify_capabilities.py
+model: claude-opus-5
+frame:
+- Travel & Hospitality
+min_confidence: 0.7
+capability_model:
+  source: https://github.com/vincentmakes/turbo-ea-capabilities
+  license: CC-BY-4.0
+  attribution: Turbo EA Capabilities by Vincent Verdet — Turbo EA, https://github.com/vincentmakes/turbo-ea-capabilities,
+    CC BY 4.0
+  notice: NOTICE
+edge_count: 2
+edges:
+- tag: Shopping Flow
+  spec_file: switchfly-shopping-flow-api-openapi.yml
+  capability_id: BC-4050.30
+  capability_id_l1: BC-4050
+  capability_name: Loyalty Burn & Redemption Operations
+  confidence: 0.78
+  evidence: POST /redeem Redeem — "Redeem points from Traveler Points account"; GET /traveler-profile
+    — "Retrieve Traveler Profile information"
+  reason: Despite the 'Shopping Flow' tag name, the operations perform loyalty point redemption against
+    a traveller points account plus profile lookup, which is loyalty burn/redemption operations for a
+    travel loyalty programme.
+- tag: Machine to Machine (OAuth2 & Refund)
+  spec_file: switchfly-machine-to-machine-oauth2-refund-api-openapi.yml
+  capability_id: BC-4020.20
+  capability_id_l1: BC-4020
+  capability_name: Booking Modification & Cancellation
+  confidence: 0.7
+  evidence: POST /refund Refund — "Cancel booking or individual components of a booking"
+  reason: The tag bundles an OAuth token endpoint (plumbing) with a refund operation that cancels a travel
+    booking or its components, which is booking cancellation/refund handling. Confidence tempered because
+    half the surface is authentication.
