@@ -1,9 +1,7 @@
 {
   "provider": "switchfly",
   "sources": [
-    "switchfly-machine-to-machine-oauth2-refund-api-openapi.yml",
-    "switchfly-oauth-2-sso-authorize-api-openapi.yml",
-    "switchfly-shopping-flow-api-openapi.yml"
+    "_original/switchfly-loyalty-openapi.json"
   ],
   "outputs": [
     "switchfly-machine-to-machine-oauth2-refund-api-openapi.yml",
@@ -13,6 +11,14 @@
   "archived": [],
   "errors": [],
   "warnings": [],
-  "notes": [],
-  "skipped": []
+  "notes": [
+    "sourced from openapi/_original/ (1 archived document(s)); previously refined output at the top level was skipped rather than re-split",
+    "switchfly-loyalty-openapi.json: upgraded openapi 3.1.0 -> OpenAPI 3.2.0",
+    "apis.yml register: already-registered"
+  ],
+  "skipped": [
+    "switchfly-machine-to-machine-oauth2-refund-api-openapi.yml: previously refined output, superseded by openapi/_original/",
+    "switchfly-oauth-2-sso-authorize-api-openapi.yml: previously refined output, superseded by openapi/_original/",
+    "switchfly-shopping-flow-api-openapi.yml: previously refined output, superseded by openapi/_original/"
+  ]
 }
