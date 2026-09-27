@@ -36,10 +36,11 @@ paths:
                 - $ref: '#/components/schemas/ClientCredentialsTokenResponse'
 components:
   schemas:
-    ClientCredentialsTokenResponse:
+    RefreshTokenTokenResponse:
       type: object
       required:
       - access_token
+      - refresh_token
       properties:
         access_token:
           type: string
@@ -47,6 +48,9 @@ components:
         token_type:
           type: string
           description: Type of token issued.
+        refresh_token:
+          type: string
+          description: The refresh token issued by the authorization server. (only when using  grant `authorization_code`)
         expires_in:
           type: integer
           description: The lifetime of the access token in seconds.
@@ -78,6 +82,20 @@ components:
         redirect_uri:
           type: string
           example: https://domain.switchfly.com/apps/api/sso/oauth2
+    ClientCredentialsTokenResponse:
+      type: object
+      required:
+      - access_token
+      properties:
+        access_token:
+          type: string
+          description: The access token issued by the authorization server.
+        token_type:
+          type: string
+          description: Type of token issued.
+        expires_in:
+          type: integer
+          description: The lifetime of the access token in seconds.
     RefreshToken:
       required:
       - grant_type
@@ -93,42 +111,6 @@ components:
           type: string
         redirect_uri:
           type: string
-    RefreshTokenTokenResponse:
-      type: object
-      required:
-      - access_token
-      - refresh_token
-      properties:
-        access_token:
-          type: string
-          description: The access token issued by the authorization server.
-        token_type:
-          type: string
-          description: Type of token issued.
-        refresh_token:
-          type: string
-          description: The refresh token issued by the authorization server. (only when using  grant `authorization_code`)
-        expires_in:
-          type: integer
-          description: The lifetime of the access token in seconds.
-    AuthorizationCodeTokenResponse:
-      type: object
-      required:
-      - access_token
-      - refresh_token
-      properties:
-        access_token:
-          type: string
-          description: The access token issued by the authorization server.
-        token_type:
-          type: string
-          description: Type of token issued.
-        refresh_token:
-          type: string
-          description: The refresh token issued by the authorization server. (only when using  grant `authorization_code`)
-        expires_in:
-          type: integer
-          description: The lifetime of the access token in seconds.
     ClientCredentials:
       required:
       - grant_type
@@ -149,6 +131,24 @@ components:
           type: string
           enum:
           - profile redeem
+    AuthorizationCodeTokenResponse:
+      type: object
+      required:
+      - access_token
+      - refresh_token
+      properties:
+        access_token:
+          type: string
+          description: The access token issued by the authorization server.
+        token_type:
+          type: string
+          description: Type of token issued.
+        refresh_token:
+          type: string
+          description: The refresh token issued by the authorization server. (only when using  grant `authorization_code`)
+        expires_in:
+          type: integer
+          description: The lifetime of the access token in seconds.
   securitySchemes:
     bearerAuth:
       type: http

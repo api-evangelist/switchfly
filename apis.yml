@@ -62,6 +62,7 @@ tags:
 - White Label
 - Points Redemption
 - Travel Commerce
+- Loyalty & Incentives
 image: https://www.switchfly.com/
 maintainers:
 - FN: Kin Lane
@@ -75,7 +76,6 @@ apis:
     Describes authentication required (`client_credentials` OAuth 2) and refund requests performed by
     Switchfly application to 3rd party service to cancel redemption components.
   humanURL: https://www.switchfly.com/dev/api-documentation/loyalty
-  baseURL: https://www.switchfly.com
   tags:
   - Machine to Machine (OAuth2 & Refund)
   properties:
@@ -93,7 +93,6 @@ apis:
   name: Switchfly OAuth 2 - SSO Authorize API
   description: Switchfly OAuth 2 SSO request to 3rd party
   humanURL: https://www.switchfly.com/dev/api-documentation/loyalty
-  baseURL: https://www.switchfly.com
   tags:
   - OAuth 2 - SSO Authorize
   properties:
@@ -113,7 +112,6 @@ apis:
     Information about requests performed by Switchfly system to 3rd party service to fetch Loyalty profile
     data and redeem points from the customer account.
   humanURL: https://www.switchfly.com/dev/api-documentation/loyalty
-  baseURL: https://www.switchfly.com
   tags:
   - Shopping Flow
   properties:
