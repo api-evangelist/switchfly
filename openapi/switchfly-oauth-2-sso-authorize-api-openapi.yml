@@ -36,24 +36,6 @@ paths:
                 - $ref: '#/components/schemas/ClientCredentialsTokenResponse'
 components:
   schemas:
-    RefreshTokenTokenResponse:
-      type: object
-      required:
-      - access_token
-      - refresh_token
-      properties:
-        access_token:
-          type: string
-          description: The access token issued by the authorization server.
-        token_type:
-          type: string
-          description: Type of token issued.
-        refresh_token:
-          type: string
-          description: The refresh token issued by the authorization server. (only when using  grant `authorization_code`)
-        expires_in:
-          type: integer
-          description: The lifetime of the access token in seconds.
     AuthorizationCode:
       required:
       - grant_type
@@ -93,6 +75,24 @@ components:
         token_type:
           type: string
           description: Type of token issued.
+        expires_in:
+          type: integer
+          description: The lifetime of the access token in seconds.
+    RefreshTokenTokenResponse:
+      type: object
+      required:
+      - access_token
+      - refresh_token
+      properties:
+        access_token:
+          type: string
+          description: The access token issued by the authorization server.
+        token_type:
+          type: string
+          description: Type of token issued.
+        refresh_token:
+          type: string
+          description: The refresh token issued by the authorization server. (only when using  grant `authorization_code`)
         expires_in:
           type: integer
           description: The lifetime of the access token in seconds.
