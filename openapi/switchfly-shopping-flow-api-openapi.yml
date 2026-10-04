@@ -373,7 +373,471 @@ paths:
         default:
           description: Unexpected Error
 components:
+  examples:
+    RedeemActivityCarMixedPointsAndCash:
+      value:
+        bookingId: '1234567'
+        createdDate: 2023-07-0718:54:00Z
+        travelerProfileId: uniqueId1234
+        points: 10150
+        customerCurrency: USD
+        lang: 1
+        firstName: Checkout
+        lastName: Customer
+        country: US
+        email: checkout@test.com
+        phone: '3033121212'
+        mobilePhone: '7204909090'
+        addressLine1: Test address Line
+        addressLine2: More address details
+        city: Denver
+        state: Colorado
+        postalCode: '80249'
+        emailSubscription: true
+        metadata:
+          payments:
+          - type: Credit Card
+            amount: 80
+            currency: USD
+            pointsAmount: 8000
+          products:
+          - id: 11
+            type: ACTIVITY
+            description: Swim with dolphins
+            pointsAmount: 8150
+            shortfallCash: 0
+            fullPrice: 81.5
+            costOfGoods: 70.86
+            tax: 2.98
+            attributes:
+              activityName: Swim with dolphins
+              activityDescription: Short description
+              scheduledDate: 2023-09-19 10:00
+              airportCode: SFO
+              tourDuration: tour_duration
+              description: Short description
+          - id: 11
+            type: CAR
+            description: Toyota Trueno
+            pointsAmount: 2000
+            shortfallCash: 80
+            fullPrice: 100
+            tax: 3.58
+            attributes:
+              companyName: Enterprise
+              carDescription: Sipp Description
+              mileage: Unlimited
+              pickUpDate: 2023-09-18 16:00
+              pickupLocation: SFO Airport
+              dropOffDate: 2023-09-21 10:00
+              dropOffLocation: SFO Airport
+    TravelerProfile:
+      value:
+        travelerProfileId: uniqueTravelerId
+        balancePoints: 150000
+        title: Mr
+        firstName: firstName
+        lastName: lastName
+        email: test@switchfly.com
+        phone: '7204909090'
+        customerCurrency: USD
+        langId: 1
+        companyCode: PointBank1234
+        address:
+          addressLine1: 12 Grimmauld Place
+          city: Long Beach
+          countryCode: US
+          state: CA
+          postalCode: '123456'
+    RedeemRoomCarNoPoints:
+      value:
+        bookingId: '1234567'
+        createdDate: 2023-07-0718:54:00Z
+        travelerProfileId: uniqueId1234
+        points: 0
+        customerCurrency: USD
+        lang: 1
+        firstName: Checkout
+        lastName: Customer
+        country: US
+        email: checkout@test.com
+        phone: '3033121212'
+        mobilePhone: '7204909090'
+        addressLine1: Test address Line
+        addressLine2: More address details
+        city: Denver
+        state: Colorado
+        postalCode: '80249'
+        emailSubscription: true
+        metadata:
+          payments:
+          - type: Credit Card
+            amount: 152.96
+            currency: USD
+            pointsAmount: 0
+          products:
+          - id: 43
+            type: ROOM
+            description: Holiday Inn Miami West - Airport Area, an IHG Hotel
+            pointsAmount: 0
+            fullPrice: 119.52
+            costOfGoods: 98.06
+            tax: 12.24
+            shortfallCash: 0
+            attributes:
+              hotelName: Holiday Inn Miami West - Airport Area, an IHG Hotel
+              hotelCity: Hialeah
+              hotelCountry: US
+              roomDescription: 'Bedding requests cannot be guaranteed. Please contact the property to confirm.
+
+                <p><strong>1 King Bed and 1 Double Sofa Bed</strong></p><p>190-sq-foot room with city views </p><br/><p><b>Layout</b> - Separate sitting area</p><p><b>Internet</b> - Free WiFi </p><p><b>Entertainment</b> - Premium channels </p><p><b>Food & Drink</b> - Refrigerator, coffee/tea maker,  room service (limited hours), and microwave (on request)</p><p><b>Sleep</b> - A pillow menu, blackout drapes/curtains, and bed sheets </p><p><b>Bathroom</b> - Private bathroom, shower/tub combination, bathrobes, and free toiletries</p><p><b>Practical</b> - Sofa bed, free local calls, and laptop-compatible safe</p><p><b>Comfort</b> - Fresh bed sheets (on request), fresh towels (on request), and climate-controlled air conditioning</p><p><b>Accessibility</b> - Thin carpet in room</p><p><b>Eco-friendly</b> - Eco-friendly toiletries, eco-friendly cleaning supplies, energy-saving switches, and recycling bin</p><p><b>Need to Know</b> - Weekly housekeeping</p><p>Non-Smoking</p><p>Room/bed type depends on availability at check-in </p>'
+              checkIn: 2024-07-03 16:00
+              checkOut: 2024-07-04 11:00
+              nights: 1
+              roomType: Standard Room, 1 King Bed with Sofa bed - 1 King Bed, 1 Sofa Bed
+              occupantsCount: 1
+          - id: 29
+            type: CAR
+            description: Nissan Versa or similar
+            pointsAmount: 0
+            fullPrice: 33.44
+            costOfGoods: 27.87
+            tax: 0
+            shortfallCash: 0
+            attributes:
+              companyName: MEX
+              carDescription: Compact, 2/4 door, Automatic Transmission, Air Conditioning
+              mileage: Unlimited
+              pickUpDate: 2024-07-03 11:00
+              pickupLocation: MIA Airport
+              dropOffDate: 2024-07-04 11:00
+              dropOffLocation: MIA Airport
+    RedeemAirFullPoints:
+      value:
+        bookingId: '1234567'
+        createdDate: 2023-07-0718:54:00Z
+        travelerProfileId: uniqueId1234
+        points: 48300
+        customerCurrency: USD
+        lang: 1
+        firstName: Checkout
+        lastName: Customer
+        country: US
+        email: checkout@test.com
+        phone: '3033121212'
+        mobilePhone: '7204909090'
+        addressLine1: Test address Line
+        addressLine2: More address details
+        city: Denver
+        state: Colorado
+        postalCode: '80249'
+        emailSubscription: true
+        metadata:
+          payments: []
+          products:
+          - id: 1
+            type: AIR
+            description: (JFK - CLT - SFO) - (SFO - JFK)
+            pointsAmount: 48300
+            shortfallCash: 0
+            fullPrice: 483
+            costOfGoods: 420
+            tax: 17.7
+            attributes:
+              recordLocator: '12345'
+              isRoundTrip: true
+              travelerCounts:
+                adults: 2
+                children: 1
+                infantsInSeat: 1
+                infantsInLap: 0
+              legs:
+              - departureAirportCode: JFK
+                departureDate: 2023-09-18 05:30
+                arrivalAirportCode: SFO
+                arrivalDate: 2023-09-18 11:45
+                flightNumbers:
+                - '1111'
+                - '4567'
+                airlineCodes:
+                - AA
+                layoverAirportCodes:
+                - CLT
+              - departureAirportCode: SFO
+                departureDate: 2023-09-21 12:30
+                arrivalAirportCode: JFK
+                arrivalDate: 2023-09-21 17:45
+                flightNumbers:
+                - '555'
+                airlineCodes:
+                - AA
+                layoverAirportCodes: []
+          - id: 2
+            type: FEE
+            description: Standalone Air Booking Fee
+            pointsAmount: 2000
+            shortfallCash: 0
+            fullPrice: 20
+            costOfGoods: 0
+            tax: 0
+            attributes:
+              contractName: Standalone Air Booking Fee
+              feeType: BOOKING
+    RedeemAirRoomInsurancePointsCash:
+      value:
+        bookingId: '1234567'
+        createdDate: 2023-07-0718:54:00Z
+        travelerProfileId: uniqueId1234
+        points: 62073
+        customerCurrency: USD
+        lang: 1
+        firstName: Checkout
+        lastName: Customer
+        country: US
+        email: checkout@test.com
+        phone: '3033121212'
+        mobilePhone: '7204909090'
+        addressLine1: Test address Line
+        addressLine2: More address details
+        city: Denver
+        state: Colorado
+        postalCode: '80249'
+        metadata:
+          payments:
+          - type: Credit Card
+            amount: 20
+            currency: USD
+            pointsAmount: 2000
+          products:
+          - id: 1
+            type: AIR
+            description: (JFK - CLT - SFO) - (SFO - JFK)
+            pointsAmount: 48300
+            shortfallCash: 0
+            fullPrice: 483
+            costOfGoods: 420
+            tax: 17.7
+            attributes:
+              recordLocator: '12345'
+              isRoundTrip: true
+              travelerCounts:
+                adults: 2
+                children: 1
+                infantsInSeat: 1
+                infantsInLap: 0
+              legs:
+              - departureAirportCode: JFK
+                departureDate: 2023-09-18 05:30
+                arrivalAirportCode: SFO
+                arrivalDate: 2023-09-18 11:45
+                flightNumbers:
+                - '1111'
+                - '4567'
+                airlineCodes:
+                - AA
+                layoverAirportCodes:
+                - CLT
+              - departureAirportCode: SFO
+                departureDate: 2023-09-21 12:30
+                arrivalAirportCode: JFK
+                arrivalDate: 2023-09-21 17:45
+                flightNumbers:
+                - '555'
+                airlineCodes:
+                - AA
+                layoverAirportCodes: []
+          - id: 2
+            type: ROOM
+            description: Doubletree Hotel San Francisco Airport
+            pointsAmount: 12000
+            shortfallCash: 0
+            fullPrice: 120
+            costOfGoods: 104.34
+            tax: 4.39
+            attributes:
+              hotelName: Doubletree Hotel San Francisco Airport
+              hotelCity: BURLINGAME
+              hotelCountry: US
+              roomDescription: Room description
+              checkIn: 2023-09-18 10:30
+              checkOut: 2023-09-21 10:30
+              nights: 2
+              roomType: room_type
+              occupantsCount: 1
+          - id: 3
+            type: INSURANCE
+            description: Cancel for any reason.
+            pointsAmount: 1773
+            fullPrice: 27.73
+            costOfGoods: 27.73
+            tax: 0
+            shortfallCash: 20
+            attributes:
+              contractName: Base Package
+              startDate: 2023-09-18 00:00
+              endDate: 2023-09-21 00:00
+    RedeemAirRoomActivityCarPointsAndCash:
+      value:
+        bookingId: '1234567'
+        createdDate: 2023-07-0718:54:00Z
+        travelerProfileId: uniqueId1234
+        points: 68450
+        customerCurrency: USD
+        lang: 1
+        firstName: Checkout
+        lastName: Customer
+        country: US
+        email: checkout@test.com
+        phone: '3033121212'
+        mobilePhone: '7204909090'
+        addressLine1: Test address Line
+        addressLine2: More address details
+        city: Denver
+        state: Colorado
+        postalCode: '80249'
+        emailSubscription: false
+        metadata:
+          payments:
+          - type: Credit Card
+            amount: 100
+            currency: USD
+            pointsAmount: 10000
+          products:
+          - id: 1
+            type: AIR
+            description: (JFK - CLT - SFO) - (SFO - JFK)
+            pointsAmount: 48300
+            shortfallCash: 0
+            fullPrice: 483
+            costOfGoods: 420
+            tax: 17.7
+            attributes:
+              recordLocator: '12345'
+              isRoundTrip: true
+              travelerCounts:
+                adults: 2
+                children: 1
+                infantsInSeat: 1
+                infantsInLap: 0
+              legs:
+              - departureAirportCode: JFK
+                departureDate: 2023-09-18 05:30
+                arrivalAirportCode: SFO
+                arrivalDate: 2023-09-18 11:45
+                flightNumbers:
+                - '1111'
+                - '4567'
+                airlineCodes:
+                - AA
+                layoverAirportCodes:
+                - CLT
+              - departureAirportCode: SFO
+                departureDate: 2023-09-21 12:30
+                arrivalAirportCode: JFK
+                arrivalDate: 2023-09-21 17:45
+                flightNumbers:
+                - '555'
+                airlineCodes:
+                - AA
+                layoverAirportCodes: []
+          - id: 2
+            type: ROOM
+            description: Doubletree Hotel San Francisco Airport
+            pointsAmount: 12000
+            shortfallCash: 0
+            fullPrice: 120
+            costOfGoods: 104.34
+            tax: 4.39
+            attributes:
+              hotelName: Doubletree Hotel San Francisco Airport
+              hotelCity: BURLINGAME
+              hotelCountry: US
+              roomDescription: Room description
+              checkIn: 2023-09-18 10:30
+              checkOut: 2023-09-21 10:30
+              nights: 2
+              roomType: room_type
+              occupantsCount: 1
+          - id: 3
+            type: ACTIVITY
+            description: Swim with dolphins
+            pointsAmount: 8150
+            shortfallCash: 0
+            fullPrice: 81.5
+            costOfGoods: 70.86
+            tax: 2.98
+            attributes:
+              activityName: Swim with dolphins
+              activityDescription: Short description
+              scheduledDate: 2023-09-19 10:00
+              airportCode: SFO
+              tourDuration: tour_duration
+              description: Short description
+          - id: 4
+            type: CAR
+            description: Toyota Trueno
+            pointsAmount: 0
+            shortfallCash: 100
+            fullPrice: 100
+            tax: 3.58
+            attributes:
+              companyName: Enterprise
+              carDescription: Sipp Description
+              mileage: Unlimited
+              pickUpDate: 2023-09-18 16:00
+              pickupLocation: SFO Airport
+              dropOffDate: 2023-09-21 10:00
+              dropOffLocation: SFO Airport
+    RedeemActivityCash:
+      value:
+        bookingId: '1234567'
+        points: 0
+        type: travel
+        customerCurrency: USD
+        lang: 1
+        createdDate: 2025-06-26 03:59
+        travelerProfileId: checkout@test.com
+        firstName: Checkout
+        lastName: Customer
+        country: US
+        email: checkout@test.com
+        phone: '3033121212'
+        mobilePhone: '7204909090'
+        addressLine1: Test address Line
+        city: Denver
+        state: Colorado
+        postalCode: '80249'
+        emailSubscription: false
+        metadata:
+          payments:
+          - type: Credit Card
+            amount: 48.65
+            currency: USD
+            pointsAmount: 0
+          products:
+          - id: 1121
+            type: ACTIVITY
+            description: California Sunset Cruise (2-hours)
+            pointsAmount: 0
+            fullPrice: 48.65
+            shortfallCash: 0
+            attributes:
+              activityName: California Sunset Cruise (2-hours)
+              activityDescription: Experience the magic of San Francisco ...
+              scheduledDate: 2025-08-13 19:00
+              airportCode: SFO
+              tourDuration: 2 hours
+              description: 'Experience the magic of San Francisco ... '
   schemas:
+    RedemptionConfirmation:
+      required:
+      - redemptionConfirmationId
+      type: object
+      format: json
+      properties:
+        redemptionConfirmationId:
+          type: string
+          description: Redemption confirmation unique id, will be used on `/refund` API calls for cancellation
     Redeem:
       type: object
       format: json
@@ -753,15 +1217,6 @@ components:
                         feeType:
                           type: string
                           description: Specifies the type of fee applied to the transaction or service
-    RedemptionConfirmation:
-      required:
-      - redemptionConfirmationId
-      type: object
-      format: json
-      properties:
-        redemptionConfirmationId:
-          type: string
-          description: Redemption confirmation unique id, will be used on `/refund` API calls for cancellation
     TravelerProfile:
       type: object
       format: json
@@ -888,461 +1343,6 @@ components:
         companyCode:
           type: string
           description: This is a profile parameter that Switchfly uses to customize branding and enable company-specific portal reporting
-  examples:
-    RedeemActivityCarMixedPointsAndCash:
-      value:
-        bookingId: '1234567'
-        createdDate: 2023-07-0718:54:00Z
-        travelerProfileId: uniqueId1234
-        points: 10150
-        customerCurrency: USD
-        lang: 1
-        firstName: Checkout
-        lastName: Customer
-        country: US
-        email: checkout@test.com
-        phone: '3033121212'
-        mobilePhone: '7204909090'
-        addressLine1: Test address Line
-        addressLine2: More address details
-        city: Denver
-        state: Colorado
-        postalCode: '80249'
-        emailSubscription: true
-        metadata:
-          payments:
-          - type: Credit Card
-            amount: 80
-            currency: USD
-            pointsAmount: 8000
-          products:
-          - id: 11
-            type: ACTIVITY
-            description: Swim with dolphins
-            pointsAmount: 8150
-            shortfallCash: 0
-            fullPrice: 81.5
-            costOfGoods: 70.86
-            tax: 2.98
-            attributes:
-              activityName: Swim with dolphins
-              activityDescription: Short description
-              scheduledDate: 2023-09-19 10:00
-              airportCode: SFO
-              tourDuration: tour_duration
-              description: Short description
-          - id: 11
-            type: CAR
-            description: Toyota Trueno
-            pointsAmount: 2000
-            shortfallCash: 80
-            fullPrice: 100
-            tax: 3.58
-            attributes:
-              companyName: Enterprise
-              carDescription: Sipp Description
-              mileage: Unlimited
-              pickUpDate: 2023-09-18 16:00
-              pickupLocation: SFO Airport
-              dropOffDate: 2023-09-21 10:00
-              dropOffLocation: SFO Airport
-    TravelerProfile:
-      value:
-        travelerProfileId: uniqueTravelerId
-        balancePoints: 150000
-        title: Mr
-        firstName: firstName
-        lastName: lastName
-        email: test@switchfly.com
-        phone: '7204909090'
-        customerCurrency: USD
-        langId: 1
-        companyCode: PointBank1234
-        address:
-          addressLine1: 12 Grimmauld Place
-          city: Long Beach
-          countryCode: US
-          state: CA
-          postalCode: '123456'
-    RedeemAirFullPoints:
-      value:
-        bookingId: '1234567'
-        createdDate: 2023-07-0718:54:00Z
-        travelerProfileId: uniqueId1234
-        points: 48300
-        customerCurrency: USD
-        lang: 1
-        firstName: Checkout
-        lastName: Customer
-        country: US
-        email: checkout@test.com
-        phone: '3033121212'
-        mobilePhone: '7204909090'
-        addressLine1: Test address Line
-        addressLine2: More address details
-        city: Denver
-        state: Colorado
-        postalCode: '80249'
-        emailSubscription: true
-        metadata:
-          payments: []
-          products:
-          - id: 1
-            type: AIR
-            description: (JFK - CLT - SFO) - (SFO - JFK)
-            pointsAmount: 48300
-            shortfallCash: 0
-            fullPrice: 483
-            costOfGoods: 420
-            tax: 17.7
-            attributes:
-              recordLocator: '12345'
-              isRoundTrip: true
-              travelerCounts:
-                adults: 2
-                children: 1
-                infantsInSeat: 1
-                infantsInLap: 0
-              legs:
-              - departureAirportCode: JFK
-                departureDate: 2023-09-18 05:30
-                arrivalAirportCode: SFO
-                arrivalDate: 2023-09-18 11:45
-                flightNumbers:
-                - '1111'
-                - '4567'
-                airlineCodes:
-                - AA
-                layoverAirportCodes:
-                - CLT
-              - departureAirportCode: SFO
-                departureDate: 2023-09-21 12:30
-                arrivalAirportCode: JFK
-                arrivalDate: 2023-09-21 17:45
-                flightNumbers:
-                - '555'
-                airlineCodes:
-                - AA
-                layoverAirportCodes: []
-          - id: 2
-            type: FEE
-            description: Standalone Air Booking Fee
-            pointsAmount: 2000
-            shortfallCash: 0
-            fullPrice: 20
-            costOfGoods: 0
-            tax: 0
-            attributes:
-              contractName: Standalone Air Booking Fee
-              feeType: BOOKING
-    RedeemAirRoomActivityCarPointsAndCash:
-      value:
-        bookingId: '1234567'
-        createdDate: 2023-07-0718:54:00Z
-        travelerProfileId: uniqueId1234
-        points: 68450
-        customerCurrency: USD
-        lang: 1
-        firstName: Checkout
-        lastName: Customer
-        country: US
-        email: checkout@test.com
-        phone: '3033121212'
-        mobilePhone: '7204909090'
-        addressLine1: Test address Line
-        addressLine2: More address details
-        city: Denver
-        state: Colorado
-        postalCode: '80249'
-        emailSubscription: false
-        metadata:
-          payments:
-          - type: Credit Card
-            amount: 100
-            currency: USD
-            pointsAmount: 10000
-          products:
-          - id: 1
-            type: AIR
-            description: (JFK - CLT - SFO) - (SFO - JFK)
-            pointsAmount: 48300
-            shortfallCash: 0
-            fullPrice: 483
-            costOfGoods: 420
-            tax: 17.7
-            attributes:
-              recordLocator: '12345'
-              isRoundTrip: true
-              travelerCounts:
-                adults: 2
-                children: 1
-                infantsInSeat: 1
-                infantsInLap: 0
-              legs:
-              - departureAirportCode: JFK
-                departureDate: 2023-09-18 05:30
-                arrivalAirportCode: SFO
-                arrivalDate: 2023-09-18 11:45
-                flightNumbers:
-                - '1111'
-                - '4567'
-                airlineCodes:
-                - AA
-                layoverAirportCodes:
-                - CLT
-              - departureAirportCode: SFO
-                departureDate: 2023-09-21 12:30
-                arrivalAirportCode: JFK
-                arrivalDate: 2023-09-21 17:45
-                flightNumbers:
-                - '555'
-                airlineCodes:
-                - AA
-                layoverAirportCodes: []
-          - id: 2
-            type: ROOM
-            description: Doubletree Hotel San Francisco Airport
-            pointsAmount: 12000
-            shortfallCash: 0
-            fullPrice: 120
-            costOfGoods: 104.34
-            tax: 4.39
-            attributes:
-              hotelName: Doubletree Hotel San Francisco Airport
-              hotelCity: BURLINGAME
-              hotelCountry: US
-              roomDescription: Room description
-              checkIn: 2023-09-18 10:30
-              checkOut: 2023-09-21 10:30
-              nights: 2
-              roomType: room_type
-              occupantsCount: 1
-          - id: 3
-            type: ACTIVITY
-            description: Swim with dolphins
-            pointsAmount: 8150
-            shortfallCash: 0
-            fullPrice: 81.5
-            costOfGoods: 70.86
-            tax: 2.98
-            attributes:
-              activityName: Swim with dolphins
-              activityDescription: Short description
-              scheduledDate: 2023-09-19 10:00
-              airportCode: SFO
-              tourDuration: tour_duration
-              description: Short description
-          - id: 4
-            type: CAR
-            description: Toyota Trueno
-            pointsAmount: 0
-            shortfallCash: 100
-            fullPrice: 100
-            tax: 3.58
-            attributes:
-              companyName: Enterprise
-              carDescription: Sipp Description
-              mileage: Unlimited
-              pickUpDate: 2023-09-18 16:00
-              pickupLocation: SFO Airport
-              dropOffDate: 2023-09-21 10:00
-              dropOffLocation: SFO Airport
-    RedeemAirRoomInsurancePointsCash:
-      value:
-        bookingId: '1234567'
-        createdDate: 2023-07-0718:54:00Z
-        travelerProfileId: uniqueId1234
-        points: 62073
-        customerCurrency: USD
-        lang: 1
-        firstName: Checkout
-        lastName: Customer
-        country: US
-        email: checkout@test.com
-        phone: '3033121212'
-        mobilePhone: '7204909090'
-        addressLine1: Test address Line
-        addressLine2: More address details
-        city: Denver
-        state: Colorado
-        postalCode: '80249'
-        metadata:
-          payments:
-          - type: Credit Card
-            amount: 20
-            currency: USD
-            pointsAmount: 2000
-          products:
-          - id: 1
-            type: AIR
-            description: (JFK - CLT - SFO) - (SFO - JFK)
-            pointsAmount: 48300
-            shortfallCash: 0
-            fullPrice: 483
-            costOfGoods: 420
-            tax: 17.7
-            attributes:
-              recordLocator: '12345'
-              isRoundTrip: true
-              travelerCounts:
-                adults: 2
-                children: 1
-                infantsInSeat: 1
-                infantsInLap: 0
-              legs:
-              - departureAirportCode: JFK
-                departureDate: 2023-09-18 05:30
-                arrivalAirportCode: SFO
-                arrivalDate: 2023-09-18 11:45
-                flightNumbers:
-                - '1111'
-                - '4567'
-                airlineCodes:
-                - AA
-                layoverAirportCodes:
-                - CLT
-              - departureAirportCode: SFO
-                departureDate: 2023-09-21 12:30
-                arrivalAirportCode: JFK
-                arrivalDate: 2023-09-21 17:45
-                flightNumbers:
-                - '555'
-                airlineCodes:
-                - AA
-                layoverAirportCodes: []
-          - id: 2
-            type: ROOM
-            description: Doubletree Hotel San Francisco Airport
-            pointsAmount: 12000
-            shortfallCash: 0
-            fullPrice: 120
-            costOfGoods: 104.34
-            tax: 4.39
-            attributes:
-              hotelName: Doubletree Hotel San Francisco Airport
-              hotelCity: BURLINGAME
-              hotelCountry: US
-              roomDescription: Room description
-              checkIn: 2023-09-18 10:30
-              checkOut: 2023-09-21 10:30
-              nights: 2
-              roomType: room_type
-              occupantsCount: 1
-          - id: 3
-            type: INSURANCE
-            description: Cancel for any reason.
-            pointsAmount: 1773
-            fullPrice: 27.73
-            costOfGoods: 27.73
-            tax: 0
-            shortfallCash: 20
-            attributes:
-              contractName: Base Package
-              startDate: 2023-09-18 00:00
-              endDate: 2023-09-21 00:00
-    RedeemActivityCash:
-      value:
-        bookingId: '1234567'
-        points: 0
-        type: travel
-        customerCurrency: USD
-        lang: 1
-        createdDate: 2025-06-26 03:59
-        travelerProfileId: checkout@test.com
-        firstName: Checkout
-        lastName: Customer
-        country: US
-        email: checkout@test.com
-        phone: '3033121212'
-        mobilePhone: '7204909090'
-        addressLine1: Test address Line
-        city: Denver
-        state: Colorado
-        postalCode: '80249'
-        emailSubscription: false
-        metadata:
-          payments:
-          - type: Credit Card
-            amount: 48.65
-            currency: USD
-            pointsAmount: 0
-          products:
-          - id: 1121
-            type: ACTIVITY
-            description: California Sunset Cruise (2-hours)
-            pointsAmount: 0
-            fullPrice: 48.65
-            shortfallCash: 0
-            attributes:
-              activityName: California Sunset Cruise (2-hours)
-              activityDescription: Experience the magic of San Francisco ...
-              scheduledDate: 2025-08-13 19:00
-              airportCode: SFO
-              tourDuration: 2 hours
-              description: 'Experience the magic of San Francisco ... '
-    RedeemRoomCarNoPoints:
-      value:
-        bookingId: '1234567'
-        createdDate: 2023-07-0718:54:00Z
-        travelerProfileId: uniqueId1234
-        points: 0
-        customerCurrency: USD
-        lang: 1
-        firstName: Checkout
-        lastName: Customer
-        country: US
-        email: checkout@test.com
-        phone: '3033121212'
-        mobilePhone: '7204909090'
-        addressLine1: Test address Line
-        addressLine2: More address details
-        city: Denver
-        state: Colorado
-        postalCode: '80249'
-        emailSubscription: true
-        metadata:
-          payments:
-          - type: Credit Card
-            amount: 152.96
-            currency: USD
-            pointsAmount: 0
-          products:
-          - id: 43
-            type: ROOM
-            description: Holiday Inn Miami West - Airport Area, an IHG Hotel
-            pointsAmount: 0
-            fullPrice: 119.52
-            costOfGoods: 98.06
-            tax: 12.24
-            shortfallCash: 0
-            attributes:
-              hotelName: Holiday Inn Miami West - Airport Area, an IHG Hotel
-              hotelCity: Hialeah
-              hotelCountry: US
-              roomDescription: 'Bedding requests cannot be guaranteed. Please contact the property to confirm.
-
-                <p><strong>1 King Bed and 1 Double Sofa Bed</strong></p><p>190-sq-foot room with city views </p><br/><p><b>Layout</b> - Separate sitting area</p><p><b>Internet</b> - Free WiFi </p><p><b>Entertainment</b> - Premium channels </p><p><b>Food & Drink</b> - Refrigerator, coffee/tea maker,  room service (limited hours), and microwave (on request)</p><p><b>Sleep</b> - A pillow menu, blackout drapes/curtains, and bed sheets </p><p><b>Bathroom</b> - Private bathroom, shower/tub combination, bathrobes, and free toiletries</p><p><b>Practical</b> - Sofa bed, free local calls, and laptop-compatible safe</p><p><b>Comfort</b> - Fresh bed sheets (on request), fresh towels (on request), and climate-controlled air conditioning</p><p><b>Accessibility</b> - Thin carpet in room</p><p><b>Eco-friendly</b> - Eco-friendly toiletries, eco-friendly cleaning supplies, energy-saving switches, and recycling bin</p><p><b>Need to Know</b> - Weekly housekeeping</p><p>Non-Smoking</p><p>Room/bed type depends on availability at check-in </p>'
-              checkIn: 2024-07-03 16:00
-              checkOut: 2024-07-04 11:00
-              nights: 1
-              roomType: Standard Room, 1 King Bed with Sofa bed - 1 King Bed, 1 Sofa Bed
-              occupantsCount: 1
-          - id: 29
-            type: CAR
-            description: Nissan Versa or similar
-            pointsAmount: 0
-            fullPrice: 33.44
-            costOfGoods: 27.87
-            tax: 0
-            shortfallCash: 0
-            attributes:
-              companyName: MEX
-              carDescription: Compact, 2/4 door, Automatic Transmission, Air Conditioning
-              mileage: Unlimited
-              pickUpDate: 2024-07-03 11:00
-              pickupLocation: MIA Airport
-              dropOffDate: 2024-07-04 11:00
-              dropOffLocation: MIA Airport
   securitySchemes:
     bearerAuth:
       type: http

@@ -186,6 +186,79 @@ paths:
         default:
           description: Unexpected Error
 components:
+  examples:
+    CancellationBookingPaidInCashNonRefundable:
+      value:
+        bookingId: 1234567
+        travelerProfileId: uniqueId1234
+        redemptionConfirmationId: '123456'
+        pointsToRefund: 0
+        cancellationFeesInPoints: 0
+        cashToRefund: 0
+        currency: USD
+        refundType: BOOKING
+    CancellationFullBookingRefundPenalty:
+      value:
+        bookingId: 1234567
+        travelerProfileId: uniqueId1234
+        redemptionConfirmationId: '123456'
+        pointsToRefund: 65450
+        cancellationFeesInPoints: 3000
+        cashToRefund: 0
+        currency: USD
+        refundType: BOOKING
+    CancellationComponentPaidInPointsNoPenalty:
+      value:
+        bookingId: 1234567
+        travelerProfileId: uniqueId1234
+        redemptionConfirmationId: '123456'
+        pointsToRefund: 8150
+        cancellationFeesInPoints: 0
+        cashToRefund: 0
+        currency: USD
+        refundType: COMPONENT
+        cancelledProduct:
+          id: 3
+          type: ACTIVITY
+          description: Swim with dolphins
+    CancellationFullBookingRefundNoPenalty:
+      value:
+        bookingId: 1234567
+        travelerProfileId: uniqueId1234
+        redemptionConfirmationId: '123456'
+        pointsToRefund: 68450
+        cancellationFeesInPoints: 0
+        cashToRefund: 100
+        currency: USD
+        refundType: BOOKING
+    CancellationComponentPaidInPointsPenalty:
+      value:
+        bookingId: 1234567
+        travelerProfileId: uniqueId1234
+        redemptionConfirmationId: '123456'
+        pointsToRefund: 4075
+        cancellationFeesInPoints: 4075
+        cashToRefund: 0
+        currency: USD
+        refundType: COMPONENT
+        cancelledProduct:
+          id: 3
+          type: ACTIVITY
+          description: Swim with dolphins
+    CancellationComponentPaidInCashNoPenalty:
+      value:
+        bookingId: 1234567
+        travelerProfileId: uniqueId1234
+        redemptionConfirmationId: '123456'
+        pointsToRefund: 0
+        cancellationFeesInPoints: 0
+        cashToRefund: 100
+        currency: USD
+        refundType: COMPONENT
+        cancelledProduct:
+          id: 4
+          type: CAR
+          description: Toyota Trueno
   schemas:
     AdminClientCredentialsTokenRequest:
       type: object
@@ -210,20 +283,6 @@ components:
           enum:
           - refund
           description: Scope used to request token for `/refund` endpoint API requests.
-    ClientCredentialsTokenResponse:
-      type: object
-      required:
-      - access_token
-      properties:
-        access_token:
-          type: string
-          description: The access token issued by the authorization server.
-        token_type:
-          type: string
-          description: Type of token issued.
-        expires_in:
-          type: integer
-          description: The lifetime of the access token in seconds.
     Refund:
       type: object
       format: json
@@ -286,79 +345,20 @@ components:
             description:
               type: string
               description: Component description, e.g, activity name, hotel name, car model, flight numbers
-  examples:
-    CancellationFullBookingRefundNoPenalty:
-      value:
-        bookingId: 1234567
-        travelerProfileId: uniqueId1234
-        redemptionConfirmationId: '123456'
-        pointsToRefund: 68450
-        cancellationFeesInPoints: 0
-        cashToRefund: 100
-        currency: USD
-        refundType: BOOKING
-    CancellationComponentPaidInPointsNoPenalty:
-      value:
-        bookingId: 1234567
-        travelerProfileId: uniqueId1234
-        redemptionConfirmationId: '123456'
-        pointsToRefund: 8150
-        cancellationFeesInPoints: 0
-        cashToRefund: 0
-        currency: USD
-        refundType: COMPONENT
-        cancelledProduct:
-          id: 3
-          type: ACTIVITY
-          description: Swim with dolphins
-    CancellationComponentPaidInPointsPenalty:
-      value:
-        bookingId: 1234567
-        travelerProfileId: uniqueId1234
-        redemptionConfirmationId: '123456'
-        pointsToRefund: 4075
-        cancellationFeesInPoints: 4075
-        cashToRefund: 0
-        currency: USD
-        refundType: COMPONENT
-        cancelledProduct:
-          id: 3
-          type: ACTIVITY
-          description: Swim with dolphins
-    CancellationBookingPaidInCashNonRefundable:
-      value:
-        bookingId: 1234567
-        travelerProfileId: uniqueId1234
-        redemptionConfirmationId: '123456'
-        pointsToRefund: 0
-        cancellationFeesInPoints: 0
-        cashToRefund: 0
-        currency: USD
-        refundType: BOOKING
-    CancellationFullBookingRefundPenalty:
-      value:
-        bookingId: 1234567
-        travelerProfileId: uniqueId1234
-        redemptionConfirmationId: '123456'
-        pointsToRefund: 65450
-        cancellationFeesInPoints: 3000
-        cashToRefund: 0
-        currency: USD
-        refundType: BOOKING
-    CancellationComponentPaidInCashNoPenalty:
-      value:
-        bookingId: 1234567
-        travelerProfileId: uniqueId1234
-        redemptionConfirmationId: '123456'
-        pointsToRefund: 0
-        cancellationFeesInPoints: 0
-        cashToRefund: 100
-        currency: USD
-        refundType: COMPONENT
-        cancelledProduct:
-          id: 4
-          type: CAR
-          description: Toyota Trueno
+    ClientCredentialsTokenResponse:
+      type: object
+      required:
+      - access_token
+      properties:
+        access_token:
+          type: string
+          description: The access token issued by the authorization server.
+        token_type:
+          type: string
+          description: Type of token issued.
+        expires_in:
+          type: integer
+          description: The lifetime of the access token in seconds.
   securitySchemes:
     bearerAuth:
       type: http
