@@ -50,7 +50,7 @@ accessModel:
   method: derived
 specificationVersion: '0.23'
 created: '2026-07-17'
-modified: '2026-07-21'
+modified: '2026-10-06'
 tags:
 - Company
 - Travel
@@ -126,6 +126,8 @@ apis:
   - type: DataModel
     url: data-model/switchfly-data-model.yml
 common:
+- url: https://www.switchfly.com/blog/rss.xml
+  type: BlogRSS
 - type: Website
   url: https://www.switchfly.com/
 - type: CapabilityMap
