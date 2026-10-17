@@ -187,16 +187,20 @@ paths:
           description: Unexpected Error
 components:
   examples:
-    CancellationBookingPaidInCashNonRefundable:
+    CancellationComponentPaidInCashNoPenalty:
       value:
         bookingId: 1234567
         travelerProfileId: uniqueId1234
         redemptionConfirmationId: '123456'
         pointsToRefund: 0
         cancellationFeesInPoints: 0
-        cashToRefund: 0
+        cashToRefund: 100
         currency: USD
-        refundType: BOOKING
+        refundType: COMPONENT
+        cancelledProduct:
+          id: 4
+          type: CAR
+          description: Toyota Trueno
     CancellationFullBookingRefundPenalty:
       value:
         bookingId: 1234567
@@ -207,13 +211,13 @@ components:
         cashToRefund: 0
         currency: USD
         refundType: BOOKING
-    CancellationComponentPaidInPointsNoPenalty:
+    CancellationComponentPaidInPointsPenalty:
       value:
         bookingId: 1234567
         travelerProfileId: uniqueId1234
         redemptionConfirmationId: '123456'
-        pointsToRefund: 8150
-        cancellationFeesInPoints: 0
+        pointsToRefund: 4075
+        cancellationFeesInPoints: 4075
         cashToRefund: 0
         currency: USD
         refundType: COMPONENT
@@ -231,13 +235,23 @@ components:
         cashToRefund: 100
         currency: USD
         refundType: BOOKING
-    CancellationComponentPaidInPointsPenalty:
+    CancellationBookingPaidInCashNonRefundable:
       value:
         bookingId: 1234567
         travelerProfileId: uniqueId1234
         redemptionConfirmationId: '123456'
-        pointsToRefund: 4075
-        cancellationFeesInPoints: 4075
+        pointsToRefund: 0
+        cancellationFeesInPoints: 0
+        cashToRefund: 0
+        currency: USD
+        refundType: BOOKING
+    CancellationComponentPaidInPointsNoPenalty:
+      value:
+        bookingId: 1234567
+        travelerProfileId: uniqueId1234
+        redemptionConfirmationId: '123456'
+        pointsToRefund: 8150
+        cancellationFeesInPoints: 0
         cashToRefund: 0
         currency: USD
         refundType: COMPONENT
@@ -245,20 +259,6 @@ components:
           id: 3
           type: ACTIVITY
           description: Swim with dolphins
-    CancellationComponentPaidInCashNoPenalty:
-      value:
-        bookingId: 1234567
-        travelerProfileId: uniqueId1234
-        redemptionConfirmationId: '123456'
-        pointsToRefund: 0
-        cancellationFeesInPoints: 0
-        cashToRefund: 100
-        currency: USD
-        refundType: COMPONENT
-        cancelledProduct:
-          id: 4
-          type: CAR
-          description: Toyota Trueno
   schemas:
     AdminClientCredentialsTokenRequest:
       type: object
